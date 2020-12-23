@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Collections.Generic;
 
 namespace Crawler
 {
@@ -14,16 +16,20 @@ namespace Crawler
      */
     public class CMDCrawler
     {
-        /**
-         * use the following to store and control the next movement of the yser
-         */
+        //use the following to store and control the next movement of the yser
         public enum PlayerActions {NOTHING, NORTH, EAST, SOUTH, WEST, PICKUP, ATTACK, QUIT };
         private PlayerActions action = PlayerActions.NOTHING;
 
-        /**
-         * tracks if the game is running
-         */
-        private bool active = false;
+        private bool active = true;                     // Tracks if the game is running
+            
+        private FileStream stream = null;                   // Persistent filestream
+        private List<string> rows = new List<string>();     // List of all lines read from file
+        private char[][] map;                               // Persistent map variable
+        private int height = 0;                             // Vertical length of map
+        private int width = 0;                              // Horizontal length of the map
+
+        private bool mapLoaded = false;                     // State of map
+
 
         /**
          * Reads user input from the Console
@@ -36,9 +42,10 @@ namespace Crawler
         private string ReadUserInput()
         {
             string inputRead = string.Empty;
-            
+
             // Your code here
-            
+            inputRead = Console.ReadLine();                 // Player must type an input and press 'Enter' to submit action.
+
             return inputRead;
         }
 
@@ -53,6 +60,31 @@ namespace Crawler
         public void ProcessUserInput(string input)
         {
             // Your Code here
+
+            // If a map isnt already loaded then when the user inputs a load command, initialize the corresponding map file.
+            if (!mapLoaded)
+            {
+                if (input == "load Simple.Map")
+                {
+                    string fileName = "Simple.map";
+                    Console.WriteLine("Selected map file is: {0}", fileName);
+                    InitializeMap(fileName);
+                    mapLoaded = true;
+                }
+            }
+
+            // If the user inputs "play" then the map will be drawn.
+            if (mapLoaded)
+            {
+                if (input == "play")
+                {
+                    Console.WriteLine("Loading map...");
+                    GetOriginalMap();
+                    Console.WriteLine("Width: {0}        Height: {1}", width, height);
+                }
+            }
+
+            
         }
 
         /**
@@ -65,11 +97,8 @@ namespace Crawler
          */
         public void GameLoop(bool active)
         {
-            
-
             // Your code here
 
-        
         }
 
         /**
@@ -84,7 +113,35 @@ namespace Crawler
 
             // Your code here
 
+            mapName = @"..\..\..\maps\" + mapName;          // maps will always be within the maps folder
+            string path = Path.GetFullPath(mapName);
 
+            if (stream == null)
+            {
+                // Create a new FileStream and read it into a list using the StreamReader.
+                try
+                {
+                    stream = File.Open(path, FileMode.Open, FileAccess.Read);
+                    StreamReader reader = new StreamReader(stream);
+                    while (!reader.EndOfStream)
+                    {
+                        string line = reader.ReadLine();    // Will read each line individually
+                        width = line.Length;                // Used to measure the amount of chars within each line 
+                        rows.Add(line);                     // Add each line within the file to a list.
+                    }
+
+                    reader.Close();
+
+                    initSuccess = true;
+                    Console.WriteLine("Initialisation worked!");
+                }
+
+                catch (IOException)
+                {
+                    initSuccess = false;
+                    Console.WriteLine("Error!");
+                }
+            }
 
             return initSuccess;
         }
@@ -95,10 +152,31 @@ namespace Crawler
          */
         public char[][] GetOriginalMap()
         {
-            char[][] map = new char[0][];
-
             // Your code here
 
+            List<char> rowChars = new List<char>();
+            height = rows.Count;    // gets the total amount of lines of the map
+            map = new char[height][];
+            int rowCharsCount = 0;
+
+            // Extract each char from each line that was read from the map file.
+            for (int i = 0; i < rows.Count; i++)
+            {
+                rowChars.AddRange(rows[i].ToCharArray());
+            }
+
+            // Construct a jagged array to store each 'tile'.
+            for (int y = 0; y < height; y++)
+            {
+                map[y] = new char[width];
+                for (int x = 0; x < width; x++)
+                {
+                    map[y][x] = rowChars[rowCharsCount];
+                    rowCharsCount++;
+                    Console.Write(map[y][x]);
+                }
+                Console.WriteLine();
+            }
 
             return map;
         }
@@ -110,10 +188,7 @@ namespace Crawler
         public char[][] GetCurrentMapState()
         {
             // the map should be map[y][x]
-            char[][] map = new char[0][];
-
             // Your code here
-
 
             return map;
         }
