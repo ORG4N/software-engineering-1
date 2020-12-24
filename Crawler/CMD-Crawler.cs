@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Crawler
 {
@@ -20,7 +21,7 @@ namespace Crawler
         public enum PlayerActions {NOTHING, NORTH, EAST, SOUTH, WEST, PICKUP, ATTACK, QUIT };
         private PlayerActions action = PlayerActions.NOTHING;
 
-        private bool active = true;                     // Tracks if the game is running
+        private bool active = true;                         // Tracks if the game is running
             
         private FileStream stream = null;                   // Persistent filestream
         private List<string> rows = new List<string>();     // List of all lines read from file
@@ -29,15 +30,12 @@ namespace Crawler
         private int width = 0;                              // Horizontal length of the map
 
         private bool mapLoaded = false;                     // State of map
-
+        private bool mapPlaying = false;
 
         /**
          * Reads user input from the Console
-         * 
          * Please use and implement this method to read the user input.
-         * 
          * Return the input as string to be further processed
-         * 
          */
         private string ReadUserInput()
         {
@@ -51,7 +49,6 @@ namespace Crawler
 
         /**
          * Processed the user input string
-         * 
          * takes apart the user input and does control the information flow
          *  * initializes the map ( you must call InitializeMap)
          *  * starts the game when user types in Play
@@ -59,17 +56,40 @@ namespace Crawler
          */
         public void ProcessUserInput(string input)
         {
-            // Your Code here
+            input = input.ToLower();                        // Inputs will therefore not be case sensitive - which can be annoying!
+
+            if (input == "quit")
+            {
+                action = PlayerActions.QUIT;
+            }
 
             // If a map isnt already loaded then when the user inputs a load command, initialize the corresponding map file.
-            if (!mapLoaded)
+            else if (!mapLoaded)
             {
-                if (input == "load Simple.Map")
+                // First choice of map options
+                if (input == "load simple.map")
                 {
                     string fileName = "Simple.map";
                     Console.WriteLine("Selected map file is: {0}", fileName);
                     InitializeMap(fileName);
                     mapLoaded = true;
+                }
+
+                // Second choice of map options *ADVANCED*
+                else if (input == "load advanced.map")
+                {
+                    string fileName = "Advanced.map";
+                    Console.WriteLine("Selected map file is: {0}", fileName);
+                    InitializeMap(fileName);
+                    mapLoaded = true;
+                }
+
+                // If the user input is incorrect
+                else 
+                { 
+                    Console.WriteLine("-- INVALID INPUT --");
+                    Console.WriteLine(" 1. Load a map");
+                    Console.WriteLine(" 2. Input 'play'\n\n");
                 }
             }
 
@@ -80,7 +100,7 @@ namespace Crawler
                 {
                     Console.WriteLine("Loading map...");
                     GetOriginalMap();
-                    Console.WriteLine("Width: {0}        Height: {1}", width, height);
+                    mapPlaying = true;
                 }
             }
 
@@ -90,7 +110,6 @@ namespace Crawler
         /**
          * The Main Game Loop. 
          * It updates the game state.
-         * 
          * This is the method where you implement your game logic and alter the state of the map/game
          * use playeraction to determine how the character should move/act
          * the input should tell the loop if the game is active and the state should advance
@@ -104,7 +123,6 @@ namespace Crawler
         /**
         * Map and GameState get initialized
         * mapName references a file name 
-        * 
         * Create a private object variable for storing the map in Crawler and using it in the game.
         */
         public bool InitializeMap(String mapName)
@@ -133,7 +151,7 @@ namespace Crawler
                     reader.Close();
 
                     initSuccess = true;
-                    Console.WriteLine("Initialisation worked!");
+                    Console.WriteLine("Initialisation worked!\n\n");
                 }
 
                 catch (IOException)
@@ -156,7 +174,7 @@ namespace Crawler
 
             List<char> rowChars = new List<char>();
             height = rows.Count;    // gets the total amount of lines of the map
-            map = new char[height][];
+            this.map = new char[height][];
             int rowCharsCount = 0;
 
             // Extract each char from each line that was read from the map file.
@@ -168,12 +186,12 @@ namespace Crawler
             // Construct a jagged array to store each 'tile'.
             for (int y = 0; y < height; y++)
             {
-                map[y] = new char[width];
+                this.map[y] = new char[width];
                 for (int x = 0; x < width; x++)
                 {
-                    map[y][x] = rowChars[rowCharsCount];
+                    this.map[y][x] = rowChars[rowCharsCount];
                     rowCharsCount++;
-                    Console.Write(map[y][x]);
+                    Console.Write(this.map[y][x]);
                 }
                 Console.WriteLine();
             }
@@ -209,7 +227,6 @@ namespace Crawler
 
         /**
         * Returns the next player action
-        * 
         * This method does not alter any internal state
         */
         public int GetPlayerAction()
@@ -218,6 +235,8 @@ namespace Crawler
 
             // Your code here
 
+
+
             return action;
         }
 
@@ -225,7 +244,8 @@ namespace Crawler
         public bool GameIsRunning()
         {
             bool running = false;
-            // Your code here 
+
+            if (mapPlaying == true) { running = true; }
 
             return running;
         }
