@@ -26,11 +26,16 @@ namespace Crawler
         private FileStream stream = null;                   // Persistent filestream
         private List<string> rows = new List<string>();     // List of all lines read from file
         private char[][] map;                               // Persistent map variable
+        private char[][] mapCopy;                           // This is a copy of the original map - changes will be applied to this version
         private int height = 0;                             // Vertical length of map
         private int width = 0;                              // Horizontal length of the map
 
-        private bool mapLoaded = false;                     // State of map
-        private bool mapPlaying = false;
+        private bool mapLoaded = false;                     // Has user selected map?
+        private bool mapPlaying = false;                    // Has user input 'play'?
+
+        public int gold = 0;                                // Currency - advanced feature
+
+        int[] position = { 0, 0 };
 
         /**
          * Reads user input from the Console
@@ -94,7 +99,7 @@ namespace Crawler
             }
 
             // If the user inputs "play" then the map will be drawn.
-            if (mapLoaded)
+            if (mapLoaded && !mapPlaying)
             {
                 if (input == "play")
                 {
@@ -104,7 +109,28 @@ namespace Crawler
                 }
             }
 
-            
+            if (mapPlaying)
+            {
+                if (input == "w")
+                {
+                    action = PlayerActions.NORTH;
+                }
+
+                if (input == "a")
+                {
+                    action = PlayerActions.EAST;
+                }
+
+                if (input == "s")
+                {
+                    action = PlayerActions.SOUTH;
+                }
+
+                if (input == "d")
+                {
+                    action = PlayerActions.WEST;
+                }
+            }
         }
 
         /**
@@ -118,6 +144,36 @@ namespace Crawler
         {
             // Your code here
 
+            int x = position[0];
+            int y = position[1];
+            
+            if (GetPlayerAction() == 1)                     // Input = 'W', move North
+            {
+                position[1] = y + 1;
+
+                Console.WriteLine("({0} , {1})", position[0], position[1]);
+            }
+
+            if (GetPlayerAction() == 2)                     // Input = 'A', move West
+            {
+                position[0] = x - 1;
+                Console.WriteLine("({0} , {1})", position[0], position[1]);
+
+            }
+
+            if (GetPlayerAction() == 3)                     // Input = 'S', move South
+            {
+                position[1] = y - 1;
+
+                Console.WriteLine("({0} , {1})", position[0], position[1]);
+
+            }
+
+            if (GetPlayerAction() == 4)                     // Input = 'D', move East
+            {
+                position[0] = x + 1;
+                Console.WriteLine("({0} , {1})", position[0], position[1]);
+            }
         }
 
         /**
@@ -183,6 +239,11 @@ namespace Crawler
                 rowChars.AddRange(rows[i].ToCharArray());
             }
 
+            if (rowChars.Contains('S'))
+            {
+                rowChars[rowChars.IndexOf('S')] = '@';
+            }
+
             // Construct a jagged array to store each 'tile'.
             for (int y = 0; y < height; y++)
             {
@@ -191,10 +252,10 @@ namespace Crawler
                 {
                     this.map[y][x] = rowChars[rowCharsCount];
                     rowCharsCount++;
-                    Console.Write(this.map[y][x]);
                 }
-                Console.WriteLine();
             }
+
+            DrawMap(map);
 
             return map;
         }
@@ -208,6 +269,31 @@ namespace Crawler
             // the map should be map[y][x]
             // Your code here
 
+            mapCopy = new char[map.Length][];
+
+            for (int y=0; y< map.Length; y++)
+            {
+                mapCopy[y] = (char[])map[y].Clone();
+            }
+
+            DrawMap(mapCopy);
+
+            return map;
+        }
+
+        /*
+         * A method that can be called to draw the map.
+         */ 
+        public char[][] DrawMap(char[][] map)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    Console.Write(this.map[y][x]);
+                }
+                Console.WriteLine();
+            }
             return map;
         }
 
@@ -218,9 +304,17 @@ namespace Crawler
          */
         public int[] GetPlayerPosition()
         {
-            int[] position = { 0, 0 };
-
-            // Your code here
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (map[y][x] == '@')
+                    {
+                        position[0] = x;
+                        position[1] = y;
+                    }
+                }
+            }
 
             return position;
         }
@@ -231,11 +325,7 @@ namespace Crawler
         */
         public int GetPlayerAction()
         {
-            int action = 0;
-
-            // Your code here
-
-
+            int action = (int)this.action;
 
             return action;
         }
