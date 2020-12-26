@@ -32,10 +32,15 @@ namespace Crawler
 
         private bool mapLoaded = false;                     // Has user selected map?
         private bool mapPlaying = false;                    // Has user input 'play'?
+        private bool currentMapLoaded = false;
 
-        public int gold = 0;                                // Currency - advanced feature
+        private int gold = 0;                                // Currency - advanced feature
 
-        int[] position = { 0, 0 };
+        private int[] position = { 0, 0 };
+        private int[] positionCopy = { 0, 0 };
+        private bool setPosition = false;
+        private char currentChar = '.';
+        private char charAtPos;
 
         /**
          * Reads user input from the Console
@@ -144,36 +149,114 @@ namespace Crawler
         {
             // Your code here
 
-            int x = position[0];
-            int y = position[1];
-            
-            if (GetPlayerAction() == 1)                     // Input = 'W', move North
+            if (setPosition == false)
             {
-                position[1] = y + 1;
-
-                Console.WriteLine("({0} , {1})", position[0], position[1]);
+                GetPlayerPosition();
             }
 
-            if (GetPlayerAction() == 2)                     // Input = 'A', move West
-            {
-                position[0] = x - 1;
-                Console.WriteLine("({0} , {1})", position[0], position[1]);
+            position.CopyTo(positionCopy, 0);
 
+
+            int x = position[0];
+            int y = position[1];
+
+
+            if (GetPlayerAction() == 1)                     // Input = 'W', move North
+            {
+                positionCopy[1] = y - 1;
+                MakeMove();
+            }
+
+            if (GetPlayerAction() == 2)                     // Input = 'A', move East
+            {
+                positionCopy[0] = x - 1;
+                MakeMove();
             }
 
             if (GetPlayerAction() == 3)                     // Input = 'S', move South
             {
-                position[1] = y - 1;
-
-                Console.WriteLine("({0} , {1})", position[0], position[1]);
-
+                positionCopy[1] = y + 1;
+                MakeMove();
             }
 
-            if (GetPlayerAction() == 4)                     // Input = 'D', move East
+            if (GetPlayerAction() == 4)                     // Input = 'D', move West
             {
-                position[0] = x + 1;
-                Console.WriteLine("({0} , {1})", position[0], position[1]);
+                positionCopy[0] = x + 1;
+                MakeMove();
             }
+
+            if (GetPlayerAction() == 7)                     // Input = quit, end game
+            {
+                active = false;
+            }
+        }
+
+        public bool CanMove()
+        {
+            int x = positionCopy[0];
+            int y = positionCopy[1];
+            charAtPos = mapCopy[y][x];
+            bool canMove = false;
+
+            if (charAtPos == '#') {canMove = false;}        // Player cannot move onto tiles that are Walls 
+
+            if (charAtPos == 'M') {canMove = false;}        // Player cannot move onto tiles that are Monsters
+
+            if (charAtPos == 'G') {canMove = true;}         // Player can move onto Gold
+
+            if (charAtPos == '.') {canMove = true;}         // Player can freely move through empty spaces
+
+            if (charAtPos == 'E') {GameOver();}             // Game is complete if the player reaches the Exit
+
+            return canMove;
+        }
+
+        public void MakeMove()
+        {
+            if (CanMove() == false)
+            {
+                Console.WriteLine("OUCH! You seem to have collided with something in the darkness...");
+            }
+
+            else 
+            {
+                int x, y;
+
+                // Get char at new position
+                // Draw player at new position
+                // draw old char at old position
+
+
+                // Replace the player char with the tile.
+                x = position[0];
+                y = position[1];
+                mapCopy[y][x] = currentChar;
+
+
+                x = positionCopy[0];
+                y = positionCopy[1];
+
+                // Store char at new pos before making a move
+                currentChar = mapCopy[y][x];
+
+                // Move player char to next tile
+                mapCopy[y][x] = '@';
+                positionCopy.CopyTo(position, 0);
+
+                GetCurrentMapState();
+            }
+        }
+
+        // reason for @ to be spammed is because doesnt stop player from moving onto a wall
+
+        public void GameOver()
+        {
+            Console.Clear();
+            Console.WriteLine("CONGRATULATIONS");
+            Console.WriteLine("YOU HAVE BEATEN"); 
+            Console.WriteLine("   THE GAME!   ");
+            Console.WriteLine("\n\n\n");
+            active = false;
         }
 
         /**
@@ -230,7 +313,7 @@ namespace Crawler
 
             List<char> rowChars = new List<char>();
             height = rows.Count;    // gets the total amount of lines of the map
-            this.map = new char[height][];
+            map = new char[height][];
             int rowCharsCount = 0;
 
             // Extract each char from each line that was read from the map file.
@@ -247,15 +330,15 @@ namespace Crawler
             // Construct a jagged array to store each 'tile'.
             for (int y = 0; y < height; y++)
             {
-                this.map[y] = new char[width];
+                map[y] = new char[width];
                 for (int x = 0; x < width; x++)
                 {
-                    this.map[y][x] = rowChars[rowCharsCount];
+                    map[y][x] = rowChars[rowCharsCount];
                     rowCharsCount++;
                 }
             }
 
-            DrawMap(map);
+            GetCurrentMapState();
 
             return map;
         }
@@ -269,16 +352,20 @@ namespace Crawler
             // the map should be map[y][x]
             // Your code here
 
-            mapCopy = new char[map.Length][];
-
-            for (int y=0; y< map.Length; y++)
+            if (currentMapLoaded == false)
             {
-                mapCopy[y] = (char[])map[y].Clone();
+                mapCopy = new char[map.Length][];
+
+                for (int y = 0; y < map.Length; y++)
+                {
+                    mapCopy[y] = (char[])map[y].Clone();
+                }
+                currentMapLoaded = true;
             }
 
             DrawMap(mapCopy);
 
-            return map;
+            return mapCopy;
         }
 
         /*
@@ -290,7 +377,7 @@ namespace Crawler
             {
                 for (int x = 0; x < width; x++)
                 {
-                    Console.Write(this.map[y][x]);
+                    Console.Write(map[y][x]);
                 }
                 Console.WriteLine();
             }
@@ -308,10 +395,11 @@ namespace Crawler
             {
                 for (int x = 0; x < width; x++)
                 {
-                    if (map[y][x] == '@')
+                    if (mapCopy[y][x] == '@')
                     {
                         position[0] = x;
                         position[1] = y;
+                        setPosition = true;
                     }
                 }
             }
