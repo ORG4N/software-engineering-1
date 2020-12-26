@@ -30,6 +30,7 @@ namespace Crawler
         private int height = 0;                             // Vertical length of map
         private int width = 0;                              // Horizontal length of the map
 
+        private bool gameOver = false;
         private bool mapLoaded = false;                     // Has user selected map?
         private bool mapPlaying = false;                    // Has user input 'play'?
         private bool currentMapLoaded = false;
@@ -68,6 +69,7 @@ namespace Crawler
         {
             input = input.ToLower();                        // Inputs will therefore not be case sensitive - which can be annoying!
 
+            // User can quit or close the game via this input
             if (input == "quit")
             {
                 action = PlayerActions.QUIT;
@@ -104,17 +106,17 @@ namespace Crawler
             }
 
             // If the user inputs "play" then the map will be drawn.
-            if (mapLoaded && !mapPlaying)
+            else if (mapLoaded && !mapPlaying)
             {
                 if (input == "play")
                 {
-                    Console.WriteLine("Loading map...");
+                    Console.WriteLine("Loading map...\n\n");
                     GetOriginalMap();
                     mapPlaying = true;
                 }
             }
 
-            if (mapPlaying)
+            else if (mapPlaying)
             {
                 if (input == "w")
                 {
@@ -134,6 +136,15 @@ namespace Crawler
                 if (input == "d")
                 {
                     action = PlayerActions.WEST;
+                }
+
+                if (charAtPos == 'G')
+                {
+                    if (input == "e")
+                    {
+                        gold += 1;
+                        currentChar = '.';
+                    }
                 }
             }
         }
@@ -189,6 +200,8 @@ namespace Crawler
             {
                 active = false;
             }
+
+            action = PlayerActions.NOTHING;                 // Reset 'action' after making an action.
         }
 
         public bool CanMove()
@@ -206,7 +219,7 @@ namespace Crawler
 
             if (charAtPos == '.') {canMove = true;}         // Player can freely move through empty spaces
 
-            if (charAtPos == 'E') {GameOver();}             // Game is complete if the player reaches the Exit
+            if (charAtPos == 'E') {canMove = true;}         // Player can move onto ending tile which will finish the level.
 
             return canMove;
         }
@@ -232,6 +245,11 @@ namespace Crawler
                 y = position[1];
                 mapCopy[y][x] = currentChar;
 
+                if(charAtPos == 'G')
+                {
+                    Console.WriteLine("Press 'E' to collect the GOLD!");
+                }
+
 
                 x = positionCopy[0];
                 y = positionCopy[1];
@@ -244,6 +262,11 @@ namespace Crawler
                 positionCopy.CopyTo(position, 0);
 
                 GetCurrentMapState();
+
+                if (currentChar == 'E')
+                {
+                    GameOver();
+                }
             }
         }
 
@@ -251,11 +274,12 @@ namespace Crawler
 
         public void GameOver()
         {
-            Console.Clear();
+            //Console.Clear();
             Console.WriteLine("CONGRATULATIONS");
             Console.WriteLine("YOU HAVE BEATEN"); 
             Console.WriteLine("   THE GAME!   ");
             Console.WriteLine("\n\n\n");
+            gameOver = true;
             active = false;
         }
 
@@ -373,6 +397,7 @@ namespace Crawler
          */ 
         public char[][] DrawMap(char[][] map)
         {
+            Console.WriteLine("GOLD: {0}", gold);
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -414,7 +439,6 @@ namespace Crawler
         public int GetPlayerAction()
         {
             int action = (int)this.action;
-
             return action;
         }
 
@@ -424,6 +448,8 @@ namespace Crawler
             bool running = false;
 
             if (mapPlaying == true) { running = true; }
+
+            if (gameOver == true) { running = false; }
 
             return running;
         }
