@@ -70,13 +70,13 @@ namespace Crawler
             input = input.ToLower();                        // Inputs will therefore not be case sensitive - which can be annoying!
 
             // User can quit or close the game via this input
-            if (input == "quit")
+            if (input == "quit" || input == "q")
             {
                 action = PlayerActions.QUIT;
             }
 
             // If a map isnt already loaded then when the user inputs a load command, initialize the corresponding map file.
-            else if (!mapLoaded)
+            if (!mapLoaded)
             {
                 // First choice of map options
                 if (input == "load simple.map")
@@ -106,7 +106,7 @@ namespace Crawler
             }
 
             // If the user inputs "play" then the map will be drawn.
-            else if (mapLoaded && !mapPlaying)
+            if (mapLoaded && !mapPlaying)
             {
                 if (input == "play")
                 {
@@ -116,29 +116,18 @@ namespace Crawler
                 }
             }
 
-            else if (mapPlaying)
+            if (mapPlaying)
             {
-                if (input == "w")
-                {
-                    action = PlayerActions.NORTH;
-                }
+                if (input == "w") {action = PlayerActions.NORTH;}       // Player moves vertically up
 
-                if (input == "a")
-                {
-                    action = PlayerActions.EAST;
-                }
+                if (input == "a") {action = PlayerActions.WEST;}        // Player moves horizontally left
 
-                if (input == "s")
-                {
-                    action = PlayerActions.SOUTH;
-                }
+                if (input == "s") {action = PlayerActions.SOUTH;}       // Player moves vertically down
 
-                if (input == "d")
-                {
-                    action = PlayerActions.WEST;
-                }
+                if (input == "d") {action = PlayerActions.EAST;}        // Player moves horizontally right
 
-                if (charAtPos == 'G')
+                // Player can collect gold if they are on the correct tile and input 'E'
+                if (charAtPos == 'G')                                   
                 {
                     if (input == "e")
                     {
@@ -146,6 +135,8 @@ namespace Crawler
                         currentChar = '.';
                     }
                 }
+
+                if (input == "play") {action = PlayerActions.NOTHING;}  // This input should not work if the player is playing
             }
         }
 
@@ -178,9 +169,9 @@ namespace Crawler
                 MakeMove();
             }
 
-            if (GetPlayerAction() == 2)                     // Input = 'A', move East
+            if (GetPlayerAction() == 2)                     // Input = 'A', move West
             {
-                positionCopy[0] = x - 1;
+                positionCopy[0] = x + 1;
                 MakeMove();
             }
 
@@ -190,9 +181,9 @@ namespace Crawler
                 MakeMove();
             }
 
-            if (GetPlayerAction() == 4)                     // Input = 'D', move West
+            if (GetPlayerAction() == 4)                     // Input = 'D', move East
             {
-                positionCopy[0] = x + 1;
+                positionCopy[0] = x - 1;
                 MakeMove();
             }
 
