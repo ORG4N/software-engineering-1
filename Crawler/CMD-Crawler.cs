@@ -50,8 +50,18 @@ namespace Crawler
         private string ReadUserInput()
         {
             string inputRead = string.Empty;
-            inputRead = Console.ReadLine();                 // Player must type an input and press 'Enter' to submit action.
 
+            if (mapPlaying == true)
+            {
+                char key = Console.ReadKey().KeyChar;
+                inputRead = key.ToString();
+            }
+
+            else
+            {
+                inputRead = Console.ReadLine();                 // Player must type an input and press 'Enter' to submit action.
+            }
+   
             return inputRead;
         }
 
@@ -403,11 +413,7 @@ namespace Crawler
             // Draw map to screen
             DrawMap(this.map);
 
-            Console.WriteLine(map.Length);
-
             return this.map;
-
-
         }
 
         /*
