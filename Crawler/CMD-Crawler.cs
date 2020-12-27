@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Crawler
 {
@@ -25,7 +24,7 @@ namespace Crawler
             
         private FileStream stream = null;                   // Persistent filestream
         private List<string> rows = new List<string>();     // List of all lines read from file
-        private char[][] map;                               // Persistent map variable
+        private char[][] map = new char[0][];                               // Persistent map variable
         private char[][] mapCopy;                           // This is a copy of the original map - changes will be applied to this version
         private int height = 0;                             // Vertical length of map
         private int width = 0;                              // Horizontal length of the map
@@ -35,7 +34,7 @@ namespace Crawler
         private bool mapPlaying = false;                    // Has user input 'play'?
         private bool currentMapLoaded = false;              // Track if the map has been loaded
 
-        private int gold = 0;                                // Currency - advanced feature
+        private int gold = 0;                               // Currency - advanced feature
 
         private int[] position = { 0, 0 };                  // Store player position
         private int[] positionCopy = { 0, 0 };              // Temp player position - used to check for collisions
@@ -51,8 +50,6 @@ namespace Crawler
         private string ReadUserInput()
         {
             string inputRead = string.Empty;
-
-            // Your code here
             inputRead = Console.ReadLine();                 // Player must type an input and press 'Enter' to submit action.
 
             return inputRead;
@@ -99,7 +96,7 @@ namespace Crawler
                 // If the user input is incorrect
                 else 
                 {
-                    Console.WriteLine("-- INVALID INddPUT --");
+                    Console.WriteLine("-- INVALID INPUT --");
                     Console.WriteLine(" 1. Load a map");
                     Console.WriteLine(" 2. Input 'play'\n\n");
                 }
@@ -245,12 +242,6 @@ namespace Crawler
                 y = position[1];
                 mapCopy[y][x] = currentChar;
 
-                if(charAtPos == 'G')
-                {
-                    Console.WriteLine("Press 'E' to collect the GOLD!");
-                }
-
-
                 x = positionCopy[0];
                 y = positionCopy[1];
 
@@ -276,11 +267,15 @@ namespace Crawler
         */ 
         public void GameOver()
         {
-            //Console.Clear();
             Console.WriteLine("\n\n");
-            Console.WriteLine("CONGRATULATIONS");
-            Console.WriteLine("YOU HAVE BEATEN"); 
-            Console.WriteLine("   THE GAME!   ");
+
+
+            Console.WriteLine(" ╔═════════════════╗ ");
+            Console.WriteLine(" ║ CONGRATULATIONS ║ ");
+            Console.WriteLine(" ║ YOU HAVE BEATEN ║ "); 
+            Console.WriteLine(" ║    THE GAME!    ║ ");
+            Console.WriteLine(" ╚═════════════════╝ ");
+
             Console.WriteLine("\n\n");
             gameOver = true;
             active = false;
@@ -323,9 +318,41 @@ namespace Crawler
                     initSuccess = false;
                     Console.WriteLine("Error!");
                 }
+
+                List<char> rowChars = new List<char>();         // Each element contains one row of the map file
+                height = rows.Count;                            // gets the total amount of lines of the map
+                map = new char[height][];                       // Y value / vertical length of map
+                int rowCharsCount = 0;                          // Count variable
+
+                // Extract each char from each line that was read from the map file.
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    rowChars.AddRange(rows[i].ToCharArray());
+                }
+
+                // Replace 'starting position' with player symbol 
+                if (rowChars.Contains('S'))
+                {
+                    rowChars[rowChars.IndexOf('S')] = '@';
+                }
+
+                // Construct a jagged array to store each 'tile'.
+                for (int y = 0; y < height; y++)
+                {
+                    map[y] = new char[width];
+                    for (int x = 0; x < width; x++)
+                    {
+                        map[y][x] = rowChars[rowCharsCount];
+                        rowCharsCount++;
+                    }
+                }
+
+                GetCurrentMapState();
             }
 
-            return initSuccess;
+
+
+                return initSuccess;
         }
 
         /**
@@ -334,38 +361,14 @@ namespace Crawler
          */
         public char[][] GetOriginalMap()
         {
-            List<char> rowChars = new List<char>();     // Each element contains one row of the map file
-            height = rows.Count;                        // gets the total amount of lines of the map
-            map = new char[height][];                   // Y value / vertical length of map
-            int rowCharsCount = 0;                      // Count variable
-
-            // Extract each char from each line that was read from the map file.
-            for (int i = 0; i < rows.Count; i++)
-            {
-                rowChars.AddRange(rows[i].ToCharArray());
-            }
-
-            // Replace 'starting position' with player symbol 
-            if (rowChars.Contains('S'))
-            {
-                rowChars[rowChars.IndexOf('S')] = '@';
-            }
-
-            // Construct a jagged array to store each 'tile'.
-            for (int y = 0; y < height; y++)
-            {
-                map[y] = new char[width];
-                for (int x = 0; x < width; x++)
-                {
-                    map[y][x] = rowChars[rowCharsCount];
-                    rowCharsCount++;
-                }
-            }
-
             // Draw map to screen
-            GetCurrentMapState();
+            DrawMap(this.map);
 
-            return map;
+            Console.WriteLine(map.Length);
+
+            return this.map;
+
+
         }
 
         /*
@@ -386,8 +389,9 @@ namespace Crawler
                 currentMapLoaded = true;
             }
 
+            else { DrawMap(mapCopy); }
+
             // Draw the copy to the screen
-            DrawMap(mapCopy);
 
             return mapCopy;
         }
@@ -397,7 +401,30 @@ namespace Crawler
          */ 
         public char[][] DrawMap(char[][] map)
         {
-            Console.WriteLine("GOLD: {0}", gold);       // Draw total gold above the map
+            // Some code to just make the UI look neater
+            string border1 = "   ╔";
+            string border2 = "   ╚";
+
+            for (int i=0; i<width-8; i++)
+            {
+                border1 += "═";
+                border2 += "═";
+            }
+
+            border1 += "╗";
+            border2 += "╝";
+
+            Console.WriteLine(border1);
+            Console.WriteLine("     GOLD: {0}", gold);    // Draw gold
+            Console.WriteLine(border2);
+            Console.WriteLine();
+
+            // Draw feedback to the screen
+            if (charAtPos == 'G')
+            {
+                Console.WriteLine(" Press 'E' to collect the GOLD!");
+            }
+
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
