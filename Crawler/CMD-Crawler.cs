@@ -72,8 +72,47 @@ namespace Crawler
                 action = PlayerActions.QUIT;
             }
 
+            if (input == "help" || input == "h")
+            {
+                string[] allMaps = Directory.GetFiles(@"..\..\..\maps\");       // Get all maps within this specific directory
+
+
+                Console.WriteLine("╔═════════════════════════════════════╗");
+                Console.WriteLine("║           GETTING STARTED           ║");
+                Console.WriteLine("╚═════════════════════════════════════╝");
+                Console.WriteLine();
+                Console.WriteLine("        Welcome to CMD Dungeon!");
+                Console.WriteLine();
+                Console.WriteLine(" ├───────────────────────────────────┤");
+                Console.WriteLine();
+                Console.WriteLine("   1. Load map using 'load <mapname>'");
+                Console.WriteLine("   2. Start game using 'play'");
+                Console.WriteLine();
+                Console.WriteLine(" ├───────────────────────────────────┤");
+                Console.WriteLine();
+                Console.WriteLine("            Available maps:");
+                Console.WriteLine();
+
+                // This loop will print all maps found within the maps folder
+                for (int i=0; i<allMaps.Length; i++)
+                {
+                    allMaps[i] = (allMaps[i]).Remove(0, 14);                    // Extract only the filename
+                    Console.WriteLine("   ~. {0}",allMaps[i]);
+                }
+
+                Console.WriteLine();
+                Console.WriteLine(" ├───────────────────────────────────┤");
+                Console.WriteLine();
+                Console.WriteLine("   #. Move using             W A S D");
+                Console.WriteLine("   #. Pick up Gold using     E");
+                Console.WriteLine("   #. Quit game using        Q");
+                Console.WriteLine();
+                Console.WriteLine(" ├───────────────────────────────────┤");
+                Console.WriteLine("\n\n");
+            }
+
             // If a map isnt already loaded then when the user inputs a load command, initialize the corresponding map file.
-            if (!mapLoaded)
+            else if (!mapLoaded)
             {
                 // First choice of map options
                 if (input == "load simple.map")
