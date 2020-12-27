@@ -30,18 +30,18 @@ namespace Crawler
         private int height = 0;                             // Vertical length of map
         private int width = 0;                              // Horizontal length of the map
 
-        private bool gameOver = false;
+        private bool gameOver = false;                      // Track if game has ended
         private bool mapLoaded = false;                     // Has user selected map?
         private bool mapPlaying = false;                    // Has user input 'play'?
-        private bool currentMapLoaded = false;
+        private bool currentMapLoaded = false;              // Track if the map has been loaded
 
         private int gold = 0;                                // Currency - advanced feature
 
-        private int[] position = { 0, 0 };
-        private int[] positionCopy = { 0, 0 };
-        private bool setPosition = false;
-        private char currentChar = '.';
-        private char charAtPos;
+        private int[] position = { 0, 0 };                  // Store player position
+        private int[] positionCopy = { 0, 0 };              // Temp player position - used to check for collisions
+        private bool setPosition = false;                   // Track if the starting position has been set
+        private char currentChar = '.';                     // Store the char that the player symbol has replaced
+        private char charAtPos;                             // Store the char that the player wants to move to
 
         /**
          * Reads user input from the Console
@@ -98,21 +98,28 @@ namespace Crawler
 
                 // If the user input is incorrect
                 else 
-                { 
-                    Console.WriteLine("-- INVALID INPUT --");
+                {
+                    Console.WriteLine("-- INVALID INddPUT --");
                     Console.WriteLine(" 1. Load a map");
                     Console.WriteLine(" 2. Input 'play'\n\n");
                 }
             }
 
-            // If the user inputs "play" then the map will be drawn.
-            if (mapLoaded && !mapPlaying)
+            // If the user inputs "play" then the map will be drawn else output error message.
+            else if (mapLoaded && !mapPlaying)
             {
                 if (input == "play")
                 {
                     Console.WriteLine("Loading map...\n\n");
                     GetOriginalMap();
                     mapPlaying = true;
+                }
+
+                // If the user input is incorrect
+                else
+                {
+                    Console.WriteLine("-- INVALID INPUT --");
+                    Console.WriteLine(" #. Input 'play' to continue\n\n");
                 }
             }
 
@@ -126,13 +133,15 @@ namespace Crawler
 
                 if (input == "d") {action = PlayerActions.EAST;}        // Player moves horizontally right
 
+                if (input == "q") { action = PlayerActions.QUIT; }      // Player quits game
+
+
                 // Player can collect gold if they are on the correct tile and input 'E'
                 if (charAtPos == 'G')                                   
                 {
                     if (input == "e")
                     {
-                        gold += 1;
-                        currentChar = '.';
+                        action = PlayerActions.PICKUP;
                     }
                 }
 
@@ -149,14 +158,13 @@ namespace Crawler
          */
         public void GameLoop(bool active)
         {
-            // Your code here
-
+            // If player starting position hasn't been set then set it
             if (setPosition == false)
             {
                 GetPlayerPosition();
             }
 
-            position.CopyTo(positionCopy, 0);
+            position.CopyTo(positionCopy, 0);               // Copy the current position to a temporary var
 
 
             int x = position[0];
@@ -187,9 +195,15 @@ namespace Crawler
                 MakeMove();
             }
 
+            if (GetPlayerAction() == 5)                     // Input = 'E', pick-up gold
+            {
+                gold += 1;
+                currentChar = '.';
+            }
+
             if (GetPlayerAction() == 7)                     // Input = quit, end game
             {
-                active = false;
+                this.active = false;
             }
 
             action = PlayerActions.NOTHING;                 // Reset 'action' after making an action.
@@ -226,11 +240,6 @@ namespace Crawler
             {
                 int x, y;
 
-                // Get char at new position
-                // Draw player at new position
-                // draw old char at old position
-
-
                 // Replace the player char with the tile.
                 x = position[0];
                 y = position[1];
@@ -252,24 +261,27 @@ namespace Crawler
                 mapCopy[y][x] = '@';
                 positionCopy.CopyTo(position, 0);
 
-                GetCurrentMapState();
+                GetCurrentMapState();                       // Draw the map
 
-                if (currentChar == 'E')
+                if (currentChar == 'E')                     // Game ends if player enters the 'E' tile
                 {
                     GameOver();
                 }
             }
         }
 
-        // reason for @ to be spammed is because doesnt stop player from moving onto a wall
-
+        /**
+        * Output text to screen when the player has beat the game
+        * Switch state of variables to change gamestate
+        */ 
         public void GameOver()
         {
             //Console.Clear();
+            Console.WriteLine("\n\n");
             Console.WriteLine("CONGRATULATIONS");
             Console.WriteLine("YOU HAVE BEATEN"); 
             Console.WriteLine("   THE GAME!   ");
-            Console.WriteLine("\n\n\n");
+            Console.WriteLine("\n\n");
             gameOver = true;
             active = false;
         }
@@ -282,8 +294,6 @@ namespace Crawler
         public bool InitializeMap(String mapName)
         {
             bool initSuccess = false;
-
-            // Your code here
 
             mapName = @"..\..\..\maps\" + mapName;          // maps will always be within the maps folder
             string path = Path.GetFullPath(mapName);
@@ -308,7 +318,7 @@ namespace Crawler
                     Console.WriteLine("Initialisation worked!\n\n");
                 }
 
-                catch (IOException)
+                catch (IOException)                         // If there are any errors then provide feedback
                 {
                     initSuccess = false;
                     Console.WriteLine("Error!");
@@ -324,12 +334,10 @@ namespace Crawler
          */
         public char[][] GetOriginalMap()
         {
-            // Your code here
-
-            List<char> rowChars = new List<char>();
-            height = rows.Count;    // gets the total amount of lines of the map
-            map = new char[height][];
-            int rowCharsCount = 0;
+            List<char> rowChars = new List<char>();     // Each element contains one row of the map file
+            height = rows.Count;                        // gets the total amount of lines of the map
+            map = new char[height][];                   // Y value / vertical length of map
+            int rowCharsCount = 0;                      // Count variable
 
             // Extract each char from each line that was read from the map file.
             for (int i = 0; i < rows.Count; i++)
@@ -337,6 +345,7 @@ namespace Crawler
                 rowChars.AddRange(rows[i].ToCharArray());
             }
 
+            // Replace 'starting position' with player symbol 
             if (rowChars.Contains('S'))
             {
                 rowChars[rowChars.IndexOf('S')] = '@';
@@ -353,6 +362,7 @@ namespace Crawler
                 }
             }
 
+            // Draw map to screen
             GetCurrentMapState();
 
             return map;
@@ -364,9 +374,7 @@ namespace Crawler
          */
         public char[][] GetCurrentMapState()
         {
-            // the map should be map[y][x]
-            // Your code here
-
+            // Create a copy of the original map
             if (currentMapLoaded == false)
             {
                 mapCopy = new char[map.Length][];
@@ -378,6 +386,7 @@ namespace Crawler
                 currentMapLoaded = true;
             }
 
+            // Draw the copy to the screen
             DrawMap(mapCopy);
 
             return mapCopy;
@@ -388,7 +397,7 @@ namespace Crawler
          */ 
         public char[][] DrawMap(char[][] map)
         {
-            Console.WriteLine("GOLD: {0}", gold);
+            Console.WriteLine("GOLD: {0}", gold);       // Draw total gold above the map
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -411,10 +420,10 @@ namespace Crawler
             {
                 for (int x = 0; x < width; x++)
                 {
-                    if (mapCopy[y][x] == '@')
+                    if (mapCopy[y][x] == '@')               // Player is recognised by the @ symbol
                     {
-                        position[0] = x;
-                        position[1] = y;
+                        position[0] = x;                    // First element of pos array is x
+                        position[1] = y;                    // Second element of pos array is y
                         setPosition = true;
                     }
                 }
@@ -429,7 +438,7 @@ namespace Crawler
         */
         public int GetPlayerAction()
         {
-            int action = (int)this.action;
+            int action = (int)this.action;                  // Get the int value of the enum PlayerActions
             return action;
         }
 
@@ -438,9 +447,9 @@ namespace Crawler
         {
             bool running = false;
 
-            if (mapPlaying == true) { running = true; }
+            if (mapPlaying == true) { running = true; }     // Mad has been loaded and user has input 'play'
 
-            if (gameOver == true) { running = false; }
+            if (gameOver == true) { running = false; }      // The player has reached the Exit on the map and has won.
 
             return running;
         }
