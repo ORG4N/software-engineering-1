@@ -16,15 +16,15 @@ namespace Crawler
      */
     public class CMDCrawler
     {
-        //use the following to store and control the next movement of the yser
+        //use the following to store and control the next movement of the user
         public enum PlayerActions {NOTHING, NORTH, EAST, SOUTH, WEST, PICKUP, ATTACK, QUIT };
         private PlayerActions action = PlayerActions.NOTHING;
 
         private bool active = true;                         // Tracks if the game is running
-            
+
         private FileStream stream = null;                   // Persistent filestream
         private List<string> rows = new List<string>();     // List of all lines read from file
-        private char[][] map = new char[0][];                               // Persistent map variable
+        private char[][] map = new char[0][];               // Persistent map variable
         private char[][] mapCopy;                           // This is a copy of the original map - changes will be applied to this version
         private int height = 0;                             // Vertical length of map
         private int width = 0;                              // Horizontal length of the map
@@ -49,7 +49,8 @@ namespace Crawler
 
         Random randNum = new Random();
 
-        List<int> monsterPositions = new List<int>();
+        private List<int> monsterPositions = new List<int>();
+        private int monsterMoveCount = 0;
 
         /**
          * Reads user input from the Console
@@ -237,24 +238,28 @@ namespace Crawler
             {
                 positionCopy[1] = y - 1;
                 MakeMove();
+                MoveMonsters();
             }
 
             if (GetPlayerAction() == 2)                     // Input = 'A', move West
             {
                 positionCopy[0] = x + 1;
                 MakeMove();
+                MoveMonsters();
             }
 
             if (GetPlayerAction() == 3)                     // Input = 'S', move South
             {
                 positionCopy[1] = y + 1;
                 MakeMove();
+                MoveMonsters();
             }
 
             if (GetPlayerAction() == 4)                     // Input = 'D', move East
             {
                 positionCopy[0] = x - 1;
                 MakeMove();
+                MoveMonsters();
             }
 
             if (GetPlayerAction() == 5)                     // Input = 'E', pick-up gold
@@ -281,6 +286,62 @@ namespace Crawler
             }
 
             action = PlayerActions.NOTHING;                 // Reset 'action' after making an action.
+        }
+
+        /*
+         * This method enables monsters to be able to move - it is called whenever the player moves
+         */
+        public void MoveMonsters()          
+        {
+            if (monsterMoveCount < 5)           // Monster can make 5 moves before being forced to stay still for 10 player movements        
+            {
+                GetMonsterPositions();          // Refresh current monsters on map
+
+                for (int i = 0; i < monsterPositions.Count; i += 2)     // for each of the monsters found
+                {
+                    int direction = randNum.Next(0, 3);                 // Get the monster direction to move randomly
+                    int x, y;
+
+                    x = monsterPositions[i];
+                    y = monsterPositions[i + 1];
+
+                    int[] monsterPositionsCopy = { 0, 0 };              // This copy array is used to make a 'theoretical' movement
+                    monsterPositionsCopy[0] = monsterPositions[i];
+                    monsterPositionsCopy[1] = monsterPositions[i + 1];
+
+                    if (direction == 0) { monsterPositionsCopy[i + 1] = y + 1; }    // North
+                    if (direction == 1) { monsterPositionsCopy[i] = x + 1; }        // East
+                    if (direction == 2) { monsterPositionsCopy[i + 1] = y - 1; }    // South
+                    if (direction == 3) { monsterPositionsCopy[i] = x - 1; }        // West
+
+                    // Assess whether the monster can move onto a specific tile
+                    if (CanMove(monsterPositionsCopy[i], monsterPositionsCopy[i + 1], "monster") == true)
+                    {
+                        int j, k;
+
+                        // Replace the monster char with the tile.
+                        j = monsterPositions[i];
+                        k = monsterPositions[i + 1];
+                        mapCopy[k][j] = '.';
+
+                        j = monsterPositionsCopy[0];
+                        k = monsterPositionsCopy[1];
+
+                        // Move player char to next tile
+                        mapCopy[k][j] = 'M';
+                        monsterPositions[i] = monsterPositionsCopy[0];
+                        monsterPositions[i + 1] = monsterPositionsCopy[1];
+                    }
+                }
+            }
+
+            // Means that between 5 and 15 the monsters are frozen in place
+            else if (monsterMoveCount == 15)
+            {
+                monsterMoveCount = 0;
+            }
+
+            monsterMoveCount++;
         }
 
         /*
@@ -360,6 +421,7 @@ namespace Crawler
         */
         public void GetMonsterPositions()
         {
+            monsterPositions.Clear();
             // Add all monster coordinates to a single list, can be found by incrementing a loop index by 2 at a time
             for (int y = 0; y < height; y++)
             {
@@ -389,22 +451,22 @@ namespace Crawler
         /*
          * Looks at the char the player wants to move to and assesses it's validity
          */
-        public bool CanMove()
+        public bool CanMove(int x, int y, string entity)
         {
-            int x = positionCopy[0];
-            int y = positionCopy[1];
             charAtPos = mapCopy[y][x];
             bool canMove = false;
 
-            if (charAtPos == '#') {canMove = false;}        // Player cannot move onto tiles that are Walls 
+            if (charAtPos == '#') {canMove = false;}        // Player and Monster cannot move onto tiles that are Walls
 
-            if (charAtPos == 'M') {canMove = false;}        // Player cannot move onto tiles that are Monsters
+            if (charAtPos == '@') { canMove = false; }      // Player and Monster cannot move onto tiles that are Players 
 
-            if (charAtPos == 'G') {canMove = true;}         // Player can move onto Gold
+            if (charAtPos == 'M') {canMove = false; }       // Player and Monster cannot move onto tiles that are Monsters
 
-            if (charAtPos == '.') {canMove = true;}         // Player can freely move through empty spaces
+            if (charAtPos == 'G' && entity != "monster") {canMove = true;}         // Player can move onto Gold
 
-            if (charAtPos == 'E') {canMove = true;}         // Player can move onto ending tile which will finish the level.
+            if (charAtPos == '.') {canMove = true; }        // Player and Monster can freely move through empty spaces
+
+            if (charAtPos == 'E' && entity != "monster") {canMove = true; }        // Player can move onto ending tile which will finish the level.
 
             return canMove;
         }
@@ -414,7 +476,7 @@ namespace Crawler
          */ 
         public void MakeMove()
         {
-            if (CanMove() == false)
+            if (CanMove(positionCopy[0], positionCopy[1], "player") == false)
             {
                 Console.WriteLine("OUCH! You seem to have collided with something in the darkness...");
 
