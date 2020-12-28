@@ -34,7 +34,7 @@ namespace Crawler
         private bool mapPlaying = false;                    // Has user input 'play'?
         private bool currentMapLoaded = false;              // Track if the map has been loaded
 
-        private int gold = 0;                               // Currency - advanced feature
+        private int gold = 0;                               // Currency - applies a crit effect to player damage
 
         private int[] position = { 0, 0 };                  // Store player position
         private int[] positionCopy = { 0, 0 };              // Temp player position - used to check for collisions
@@ -42,15 +42,15 @@ namespace Crawler
         private char currentChar = '.';                     // Store the char that the player symbol has replaced
         private char charAtPos;                             // Store the char that the player wants to move to
 
-        private int mHealth;          
-        private int mDamage;
-        private int pHealth = 20;
-        private int pDamage = 10;
+        private int mHealth;                                // Monster health  
+        private int mDamage;                                // Monster attack damage
+        private int pHealth = 20;                           // Player health
+        private int pDamage = 10;                           // player attack damage
 
-        Random randNum = new Random();
+        private Random randNum = new Random();              // using the random class I can generate random numbers
 
-        private List<int> monsterPositions = new List<int>();
-        private int monsterMoveCount = 0;
+        private List<int> monsterPositions = new List<int>();   // Stores x and y positions of every monster
+        private int monsterMoveCount = 0;                   // Limit the monsters ability to freely move
 
         /**
          * Reads user input from the Console
@@ -309,13 +309,13 @@ namespace Crawler
                     monsterPositionsCopy[0] = monsterPositions[i];
                     monsterPositionsCopy[1] = monsterPositions[i + 1];
 
-                    if (direction == 0) { monsterPositionsCopy[i + 1] = y + 1; }    // North
-                    if (direction == 1) { monsterPositionsCopy[i] = x + 1; }        // East
-                    if (direction == 2) { monsterPositionsCopy[i + 1] = y - 1; }    // South
-                    if (direction == 3) { monsterPositionsCopy[i] = x - 1; }        // West
+                    if (direction == 0) { monsterPositionsCopy[1] = y + 1; }    // North
+                    if (direction == 1) { monsterPositionsCopy[0] = x + 1; }        // East
+                    if (direction == 2) { monsterPositionsCopy[1] = y - 1; }    // South
+                    if (direction == 3) { monsterPositionsCopy[0] = x - 1; }        // West
 
                     // Assess whether the monster can move onto a specific tile
-                    if (CanMove(monsterPositionsCopy[i], monsterPositionsCopy[i + 1], "monster") == true)
+                    if (CanMove(monsterPositionsCopy[0], monsterPositionsCopy[1], "monster") == true)
                     {
                         int j, k;
 
@@ -466,7 +466,7 @@ namespace Crawler
 
             if (charAtPos == '.') {canMove = true; }        // Player and Monster can freely move through empty spaces
 
-            if (charAtPos == 'E' && entity != "monster") {canMove = true; }        // Player can move onto ending tile which will finish the level.
+            if (charAtPos == 'E' && entity == "player") {canMove = true; }        // Player can move onto ending tile which will finish the level.
 
             return canMove;
         }
