@@ -84,11 +84,13 @@ namespace Crawler
         public void ProcessUserInput(string input)
         {
             input = input.ToLower();                        // Inputs will therefore not be case sensitive - which can be annoying!
+            bool quitting = false;
 
             // User can quit or close the game via this input
             if (input == "quit" || input == "q")
             {
                 action = PlayerActions.QUIT;
+                quitting = true;
             }
 
             if (input == "help" || input == "h")
@@ -145,7 +147,7 @@ namespace Crawler
                 // Second choice of map options *ADVANCED*
                 else if (input == "load advanced.map")
                 {
-                    string fileName = "Advanced.map";
+                    string fileName = "test.map";
                     Console.WriteLine("Selected map file is: {0}", fileName);
                     InitializeMap(fileName);
                     mapLoaded = true;
@@ -173,7 +175,7 @@ namespace Crawler
                 }
 
                 // If the user input is incorrect
-                else
+                else if (!quitting)
                 {
                     Console.WriteLine("-- INVALID INPUT --");
                     Console.WriteLine(" #. Input 'play' to continue\n\n");
@@ -202,7 +204,6 @@ namespace Crawler
                     if (input == "e")
                     {
                         action = PlayerActions.PICKUP;
-                        
                     }
                 }
 
@@ -323,13 +324,15 @@ namespace Crawler
                 }
             }
 
+            // player is dead
             if (pHealth <= 0) 
             {
                 Console.WriteLine("\nYou have died and your journey has come to an end...\n");
                 GameOver();
             }
 
-            if (mHealth <= 0) 
+            // monster is dead
+            else if (mHealth <= 0) 
             { 
                 Console.WriteLine("\nYou have slain the monster!\n");
                 GetMonsterPositions();
@@ -339,15 +342,17 @@ namespace Crawler
                     int x = monsterPositions[i];
                     int y = monsterPositions[i+1];
 
- 
+                    // checking if the monster is next to the player so that the right monster is deleted from map
                     if (mapCopy[y - 1][x] == '@') { mapCopy[y][x] = '.'; }
                     if (mapCopy[y + 1][x] == '@') { mapCopy[y][x] = '.'; }
                     if (mapCopy[y][x - 1] == '@') { mapCopy[y][x] = '.'; }
                     if (mapCopy[y][x + 1] == '@') { mapCopy[y][x] = '.'; }
                 }
-            }
 
-            DrawMap(mapCopy);
+                SetMonsterDamage();
+                SetMonsterHealth();
+                DrawMap(mapCopy);
+            }
         }
 
         /*
