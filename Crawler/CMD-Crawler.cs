@@ -35,6 +35,7 @@ namespace Crawler
         private bool currentMapLoaded = false;              // Track if the map has been loaded
 
         private int gold = 0;                               // Currency - applies a crit effect to player damage
+        private int healthPotion = 5;                       // Interactable buff - restores health
 
         private int[] position = { 0, 0 };                  // Store player position
         private int[] positionCopy = { 0, 0 };              // Temp player position - used to check for collisions
@@ -86,6 +87,12 @@ namespace Crawler
         {
             input = input.ToLower();                        // Inputs will therefore not be case sensitive - which can be annoying!
             bool quitting = false;
+            string[] allMaps = Directory.GetFiles(@"..\..\..\maps\");       // Get all maps within this specific directory
+
+            for (int i = 0; i < allMaps.Length; i++)
+            {
+                allMaps[i] = (allMaps[i]).Remove(0, 14);                    // Extract only the filename
+            }
 
             // User can quit or close the game via this input
             if (input == "quit" || input == "q")
@@ -96,9 +103,6 @@ namespace Crawler
 
             if (input == "help" || input == "h")
             {
-                string[] allMaps = Directory.GetFiles(@"..\..\..\maps\");       // Get all maps within this specific directory
-
-
                 Console.WriteLine("╔═════════════════════════════════════╗");
                 Console.WriteLine("║           GETTING STARTED           ║");
                 Console.WriteLine("╚═════════════════════════════════════╝");
@@ -118,7 +122,6 @@ namespace Crawler
                 // This loop will print all maps found within the maps folder
                 for (int i=0; i<allMaps.Length; i++)
                 {
-                    allMaps[i] = (allMaps[i]).Remove(0, 14);                    // Extract only the filename
                     Console.WriteLine("   ~. {0}",allMaps[i]);
                 }
 
@@ -136,27 +139,20 @@ namespace Crawler
             // If a map isnt already loaded then when the user inputs a load command, initialize the corresponding map file.
             else if (!mapLoaded)
             {
-                // First choice of map options
-                if (input == "load simple.map")
+                for (int i=0; i<allMaps.Length; i++)
                 {
-                    string fileName = "Simple.map";
-                    Console.WriteLine("Selected map file is: {0}", fileName);
-                    InitializeMap(fileName);
-                    mapLoaded = true;
+                    if (input == "load " + allMaps[i].ToLower())
+                    {
+                        string fileName = allMaps[i];
+                        Console.WriteLine("Selected map file is: {0}", fileName);
+                        InitializeMap(fileName);
+                        mapLoaded = true;
+                    }
                 }
 
-                // Second choice of map options *ADVANCED*
-                else if (input == "load advanced.map")
+                if (!mapLoaded)
                 {
-                    string fileName = "test.map";
-                    Console.WriteLine("Selected map file is: {0}", fileName);
-                    InitializeMap(fileName);
-                    mapLoaded = true;
-                }
-
-                // If the user input is incorrect
-                else 
-                {
+                    // If the user input is incorrect
                     Console.WriteLine("-- INVALID INPUT --");
                     Console.WriteLine(" 1. Load a map");
                     Console.WriteLine(" 2. Input 'play'\n\n");
@@ -200,7 +196,16 @@ namespace Crawler
 
 
                 // Player can collect gold if they are on the correct tile and input 'E'
-                if (charAtPos == 'G')                                   
+                if (charAtPos == 'G')                                
+                {
+                    if (input == "e")
+                    {
+                        action = PlayerActions.PICKUP;
+                    }
+                }
+
+                // Player can also interact with Health potions
+                if (charAtPos == '+')
                 {
                     if (input == "e")
                     {
@@ -262,11 +267,20 @@ namespace Crawler
                 MoveMonsters();
             }
 
-            if (GetPlayerAction() == 5)                     // Input = 'E', pick-up gold
+            if (GetPlayerAction() == 5)                     // Input = 'E', pick-up gold or drink health potion
             {
-                gold += 1;
+                if (charAtPos == 'G')
+                {
+                    gold += 1;
+                    pDamage = PlayerDamage();                   // Damage is determined by gold
+                }
+
+                if (charAtPos == '+')  
+                {
+                    pHealth += 5;
+                }
+
                 currentChar = '.';
-                pDamage = PlayerDamage();                   // Damage is determined by gold
             }
 
             if (GetPlayerAction() == 6)                     // Input = 'Spacebar', attack monster
@@ -463,6 +477,8 @@ namespace Crawler
             if (charAtPos == 'M') {canMove = false; }       // Player and Monster cannot move onto tiles that are Monsters
 
             if (charAtPos == 'G' && entity != "monster") {canMove = true;}         // Player can move onto Gold
+
+            if (charAtPos == '+' && entity != "monster") {canMove = true; }       // Player can move onto Health
 
             if (charAtPos == '.') {canMove = true; }        // Player and Monster can freely move through empty spaces
 
@@ -680,6 +696,11 @@ namespace Crawler
             if (charAtPos == 'G')
             {
                 Console.WriteLine(" Press 'E' to collect the GOLD!");
+            }
+
+            if (charAtPos == '+')
+            {
+                Console.WriteLine(" Press 'E' to drink the POTION");
             }
 
             for (int y = 0; y < height; y++)
