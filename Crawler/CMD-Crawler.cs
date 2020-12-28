@@ -42,6 +42,15 @@ namespace Crawler
         private char currentChar = '.';                     // Store the char that the player symbol has replaced
         private char charAtPos;                             // Store the char that the player wants to move to
 
+        private int mHealth;          
+        private int mDamage;
+        private int pHealth = 20;
+        private int pDamage = 10;
+
+        Random randNum = new Random();
+
+        List<int> monsterPositions = new List<int>();
+
         /**
          * Reads user input from the Console
          * Please use and implement this method to read the user input.
@@ -158,6 +167,8 @@ namespace Crawler
                 {
                     Console.WriteLine("Loading map...\n\n");
                     GetOriginalMap();
+                    SetMonsterDamage();     // initialize monster damage
+                    SetMonsterHealth();     // initialize monster health
                     mapPlaying = true;
                 }
 
@@ -181,6 +192,9 @@ namespace Crawler
 
                 if (input == "q") { action = PlayerActions.QUIT; }      // Player quits game
 
+                if (input == " ") { action = PlayerActions.ATTACK; }      // Player quits game
+
+
 
                 // Player can collect gold if they are on the correct tile and input 'E'
                 if (charAtPos == 'G')                                   
@@ -188,6 +202,7 @@ namespace Crawler
                     if (input == "e")
                     {
                         action = PlayerActions.PICKUP;
+                        
                     }
                 }
 
@@ -245,6 +260,18 @@ namespace Crawler
             {
                 gold += 1;
                 currentChar = '.';
+                pDamage = PlayerDamage();                   // Damage is determined by gold
+            }
+
+            if (GetPlayerAction() == 6)                     // Input = 'Spacebar', attack monster
+            {
+                if (charAtPos == 'M')
+                {
+                    Console.WriteLine("You swing your sword and have struck MONSTER FLESH!\n");
+                    Combat();
+                }
+
+                else {Console.WriteLine("You swing your sword and have struck NOTHING...\n"); }
             }
 
             if (GetPlayerAction() == 7)                     // Input = quit, end game
@@ -255,6 +282,108 @@ namespace Crawler
             action = PlayerActions.NOTHING;                 // Reset 'action' after making an action.
         }
 
+        /*
+        * Attack sequence - inspired by turn based games, except it is very simple
+        * Mainly a lot of writing to the console
+        */
+        public void Combat()
+        {
+            int surpriseAttack = randNum.Next(1, 100);      // Initiative - who attacks first 
+
+            if (surpriseAttack <= 50)
+            {
+                Console.WriteLine("Your slash catches the monster off-guard!");
+
+
+                while (mHealth > 0 && pHealth > 0)
+                {
+                    Console.WriteLine("Player  health: {0}", pHealth);
+                    Console.WriteLine("Monster health: {0}\n", mHealth);
+
+                    PlayerAttack();       // player attacks first
+                    MonsterAttack();      // monster attacks second
+
+                    Console.WriteLine();
+                }
+            }
+
+            else
+            {
+                Console.WriteLine("The monster evades your attack!");
+
+                while (mHealth > 0 && pHealth > 0)
+                {
+                    Console.WriteLine("Player  health: {0}", pHealth);
+                    Console.WriteLine("Monster health: {0}\n", mHealth);
+
+                    MonsterAttack();       // monster attacks first
+                    PlayerAttack();      // player attacks second
+
+                    Console.WriteLine();
+                }
+            }
+
+            if (pHealth <= 0) 
+            {
+                Console.WriteLine("\nYou have died and your journey has come to an end...\n");
+                GameOver();
+            }
+
+            if (mHealth <= 0) 
+            { 
+                Console.WriteLine("\nYou have slain the monster!\n");
+                GetMonsterPositions();
+
+                for(int i=0; i<monsterPositions.Count; i+=2)
+                {
+                    int x = monsterPositions[i];
+                    int y = monsterPositions[i+1];
+
+ 
+                    if (mapCopy[y - 1][x] == '@') { mapCopy[y][x] = '.'; }
+                    if (mapCopy[y + 1][x] == '@') { mapCopy[y][x] = '.'; }
+                    if (mapCopy[y][x - 1] == '@') { mapCopy[y][x] = '.'; }
+                    if (mapCopy[y][x + 1] == '@') { mapCopy[y][x] = '.'; }
+                }
+            }
+
+            DrawMap(mapCopy);
+        }
+
+        /*
+        * Get positions of all monsters - will work for maps with more than one monster
+        */
+        public void GetMonsterPositions()
+        {
+            // Add all monster coordinates to a single list, can be found by incrementing a loop index by 2 at a time
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (mapCopy[y][x] == 'M')               // Monster is recognised by the M symbol
+                    {
+                        monsterPositions.Add(x);
+                        monsterPositions.Add(y);
+                    }
+                }
+            }
+        }
+
+        public void PlayerAttack()
+        {
+            mHealth = mHealth - pDamage;
+            Console.WriteLine("Damage dealt: {0}", pDamage);
+        }
+
+        public void MonsterAttack()
+        {
+            pHealth = pHealth - mDamage;
+            Console.WriteLine("Damage recieved: {0}", mDamage);
+        }
+
+        /*
+         * Looks at the char the player wants to move to and assesses it's validity
+         */
         public bool CanMove()
         {
             int x = positionCopy[0];
@@ -275,11 +404,19 @@ namespace Crawler
             return canMove;
         }
 
+        /*
+         * Responds in context to CanMove - player will eiter move or recieve feedback
+         */ 
         public void MakeMove()
         {
             if (CanMove() == false)
             {
                 Console.WriteLine("OUCH! You seem to have collided with something in the darkness...");
+
+                if (charAtPos == 'M')
+                {
+                    Console.WriteLine("OH NO! ITS A MONSTER! PRESS SPACE TO ATTACK\n");
+                }
             }
 
             else 
@@ -311,19 +448,29 @@ namespace Crawler
         }
 
         /**
-        * Output text to screen when the player has beat the game
+        * Output text to screen when the player has beaten or lost the game
         * Switch state of variables to change gamestate
         */ 
         public void GameOver()
         {
+            if (pHealth <=0)
+            {
+                Console.WriteLine(" ╔═════════════════╗ ");
+                Console.WriteLine(" ║                 ║ ");
+                Console.WriteLine(" ║  YOU HAVE DIED  ║ ");
+                Console.WriteLine(" ║                 ║ ");
+                Console.WriteLine(" ╚═════════════════╝ ");
+            }
+
+            else
+            {
+                Console.WriteLine(" ╔═════════════════╗ ");
+                Console.WriteLine(" ║ CONGRATULATIONS ║ ");
+                Console.WriteLine(" ║ YOU HAVE BEATEN ║ ");
+                Console.WriteLine(" ║    THE GAME!    ║ ");
+                Console.WriteLine(" ╚═════════════════╝ ");
+            }
             Console.WriteLine("\n\n");
-
-
-            Console.WriteLine(" ╔═════════════════╗ ");
-            Console.WriteLine(" ║ CONGRATULATIONS ║ ");
-            Console.WriteLine(" ║ YOU HAVE BEATEN ║ "); 
-            Console.WriteLine(" ║    THE GAME!    ║ ");
-            Console.WriteLine(" ╚═════════════════╝ ");
 
             Console.WriteLine("\n\n");
             gameOver = true;
@@ -399,9 +546,7 @@ namespace Crawler
                 GetCurrentMapState();
             }
 
-
-
-                return initSuccess;
+            return initSuccess;
         }
 
         /**
@@ -460,7 +605,7 @@ namespace Crawler
             border2 += "╝";
 
             Console.WriteLine(border1);
-            Console.WriteLine("     GOLD: {0}", gold);    // Draw gold
+            Console.WriteLine("     GOLD: {0}    HEALTH: {1}", gold, pHealth);    // Draw gold
             Console.WriteLine(border2);
             Console.WriteLine();
 
@@ -524,6 +669,40 @@ namespace Crawler
             if (gameOver == true) { running = false; }      // The player has reached the Exit on the map and has won.
 
             return running;
+        }
+
+        // Get a random number to determine how strong/powerful the monster is
+        public void SetMonsterDamage()
+        {
+            int type = randNum.Next(1, 10);
+
+            if (type <= 5) { mDamage = 3; }
+
+            if (type >= 6 && type <= 8) { mDamage = 5; }
+
+            if (type >= 9) { mDamage = 8; }
+        }
+
+
+        // Get a random number to determine how tanky/resistant the monster is
+        public void SetMonsterHealth()
+        {
+            int type = randNum.Next(1, 5);
+
+            if (type <= 2) { mHealth = 10; }
+
+            if (type >= 3 && type <= 4) { mHealth = 12; }
+
+            if (type == 5) { mHealth = 23; }
+        }
+
+        // Determine player damage via calculating the critical multiplyer (influenced by gold)
+        public int PlayerDamage()
+        {
+            int crit = 1 + (gold/10);       // Gold will be used to modify the player's strength
+            int damage = pDamage * crit;    // Damage = default damage * critical multiplyer
+
+            return damage;
         }
 
         /**
