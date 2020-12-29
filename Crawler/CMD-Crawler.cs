@@ -226,7 +226,7 @@ namespace Crawler
 
                 if (input == "q") { action = PlayerActions.QUIT; }      // Player quits game
 
-                if (input == " ") { action = PlayerActions.ATTACK; }      // Player quits game
+                if (input == " ") { action = PlayerActions.ATTACK; }    // Player quits game
 
 
 
@@ -267,12 +267,13 @@ namespace Crawler
                 GetPlayerPosition();
             }
 
-            position.CopyTo(positionCopy, 0);               // Copy the current position to a temporary var
+            position.CopyTo(positionCopy, 0);               // Copy the current position to a temporary variable
 
 
             int x = position[0];
             int y = position[1];
 
+            // When a player moves, so will the monsters (at random)
 
             if (GetPlayerAction() == 1)                     // Input = 'W', move North
             {
@@ -307,7 +308,7 @@ namespace Crawler
                 if (currentChar == 'G')
                 {
                     gold += 1;
-                    pDamage = PlayerDamage();                   // Damage is determined by gold
+                    pDamage = PlayerDamage();               // Damage is determined by gold
                 }
 
                 if (currentChar == '+')  
@@ -315,7 +316,7 @@ namespace Crawler
                     pHealth += healthPotion;
                 }
 
-                currentChar = '.';
+                currentChar = '.';                          // Gold or HP will need to be replaced by an empty space
             }
 
             if (GetPlayerAction() == 6)                     // Input = 'Spacebar', attack monster
@@ -377,6 +378,7 @@ namespace Crawler
                 boxDrawn = true;
             }
 
+            // Reset all of the game states and variables to their original values
             if (replayOn)
             {
                 Console.WriteLine("Do you wish to replay? Yes / No");
@@ -413,9 +415,12 @@ namespace Crawler
 
                     difficultyMult *= 2;
                 }
+
+                // User has selected to not replay - therefore exit the game loop
                 else if (replay == false) { active = false; }
             }
 
+            // Replay was never toggled on so exit game loop
             else { active = false; }
         }
 
@@ -441,9 +446,9 @@ namespace Crawler
                     monsterPositionsCopy[1] = monsterPositions[i + 1];
 
                     if (direction == 0) { monsterPositionsCopy[1] = y + 1; }    // North
-                    if (direction == 1) { monsterPositionsCopy[0] = x + 1; }        // East
+                    if (direction == 1) { monsterPositionsCopy[0] = x + 1; }    // East
                     if (direction == 2) { monsterPositionsCopy[1] = y - 1; }    // South
-                    if (direction == 3) { monsterPositionsCopy[0] = x - 1; }        // West
+                    if (direction == 3) { monsterPositionsCopy[0] = x - 1; }    // West
 
                     // Assess whether the monster can move onto a specific tile
                     if (CanMove(monsterPositionsCopy[0], monsterPositionsCopy[1], "monster") == true)
@@ -510,20 +515,20 @@ namespace Crawler
                     Console.WriteLine("Monster health: {0}\n", mHealth);
 
                     MonsterAttack();       // monster attacks first
-                    PlayerAttack();      // player attacks second
+                    PlayerAttack();        // player attacks second
 
                     Console.WriteLine();
                 }
             }
 
-            // player is dead
+            // player is dead and has the option to replay 
             if (pHealth <= 0) 
             {
                 Console.WriteLine("\nYou have died and your journey has come to an end...\n");
                 Replay();
             }
 
-            // monster is dead
+            // monster is dead - add gold to player and remove the monster from the map
             else if (mHealth <= 0) 
             {
                 int goldDropped = randNum.Next(0, 2);                   // Monsters will drop between 0 to 2 gold, at random, when slain
@@ -576,12 +581,19 @@ namespace Crawler
             }
         }
 
+
+        /*
+         * This method is called every time the player attacks
+         */
         public void PlayerAttack()
         {
             mHealth = mHealth - pDamage;
             Console.WriteLine("Damage dealt: {0}", pDamage);
         }
 
+        /*
+         * This method is called every time the monster attacks
+         */
         public void MonsterAttack()
         {
             pHealth = pHealth - mDamage;
@@ -649,7 +661,7 @@ namespace Crawler
 
                 GetCurrentMapState();                       // Draw the map
 
-                if (charAtPos == 'E')                     // Game ends if player enters the 'E' tile
+                if (charAtPos == 'E')                       // Game ends if player enters the 'E' tile
                 {
                     gameOver = true;
                 }
@@ -678,7 +690,7 @@ namespace Crawler
                     while (!reader.EndOfStream)
                     {
                         string line = reader.ReadLine();    // Will read each line individually
-                        int width = line.Length;                // Used to measure the amount of chars within each line
+                        int width = line.Length;            // Used to measure the amount of chars within each line
                         rowsWidth.Add(width);
                         rows.Add(line);                     // Add each line within the file to a list.
                     }
@@ -695,10 +707,10 @@ namespace Crawler
                     Console.WriteLine("Error!");
                 }
 
-                List<char> rowChars = new List<char>();         // Each element contains one row of the map file
-                height = rows.Count;                            // gets the total amount of lines of the map
-                map = new char[height][];                       // Y value / vertical length of map
-                int rowCharsCount = 0;                          // Count variable
+                List<char> rowChars = new List<char>();      // Each element contains one row of the map file
+                height = rows.Count;                         // gets the total amount of lines of the map
+                map = new char[height][];                    // Y value / vertical length of map
+                int rowCharsCount = 0;                       // Count variable
 
                 // Extract each char from each line that was read from the map file.
                 for (int i = 0; i < rows.Count; i++)
@@ -789,6 +801,7 @@ namespace Crawler
                 Console.WriteLine(" Press 'E' to drink the POTION");
             }
 
+            // Draw map to console 
             int k = 0;
             for (int y = 0; y < height; y++)
             {
@@ -849,32 +862,40 @@ namespace Crawler
             return running;
         }
 
-        // Get a random number to determine how strong/powerful the monster is
+        /*
+         * Get a random number to determine how strong/powerful the monster is
+         */
         public void SetMonsterDamage()
         {
             int type = randNum.Next(1, 10);
 
-            if (type <= 5) { mDamage = 3; }
+            if (type <= 5) { mDamage = 3; }                                     // Monster deals lowest damage
 
-            if (type >= 6 && type <= 8) { mDamage = 5; }
+            if (type >= 6 && type <= 8) { mDamage = 5; }                        // Monster has middle strength
 
-            if (type >= 9) { mDamage = 8; }
+            if (type >= 9) { mDamage = 8; }                                     // Monster has highest strength
         }
 
-
-        // Get a random number to determine how tanky/resistant the monster is
+        /*
+        * Get a random number to determine how tanky/resistant the monster is
+        */
         public void SetMonsterHealth()
         {
             int type = randNum.Next(1, 5);
 
-            if (type <= 2) { mHealth = 10 + difficultyMult; }
+            if (type <= 2) { mHealth = 10 + difficultyMult; }                   // Weak monster
 
-            if (type >= 3 && type <= 4) { mHealth = 12 + difficultyMult; }
+            if (type >= 3 && type <= 4) { mHealth = 12 + difficultyMult; }      // Medium strength monster
 
-            if (type == 5) { mHealth = 23 + difficultyMult; }
+            if (type == 5) { mHealth = 23 + difficultyMult; }                   // Strongest monster
         }
 
-        // Determine player damage via calculating the critical multiplyer (influenced by gold)
+        // There are a vast range of monsters/ strengths as their damage is generated independently to their health
+        // For example, a monster can have the highest possible health but the lowest possible damage!
+
+        /*
+         * Determine player damage via calculating the critical multiplyer (influenced by gold)
+         */
         public int PlayerDamage()
         {
             int crit = 1;
@@ -882,8 +903,8 @@ namespace Crawler
 
             if (gold / 15 != 0)               // Gold will be used to modify the player's strength
             {
-                crit *= 2;
-                damage = pDamage + crit;      // Damage = default damage * critical multiplyer
+                crit *= 2;                    // Crit will exponentially increase every 15 gold
+                damage = pDamage + crit;      // Damage is influenced by crit, which is influenced by gold
             }
 
             return damage;
