@@ -33,6 +33,9 @@ namespace Crawler
         private bool mapLoaded = false;                     // Has user selected map?
         private bool mapPlaying = false;                    // Has user input 'play'?
         private bool currentMapLoaded = false;              // Track if the map has been loaded
+        private bool replay;                                // State is taken from user input - determines whether to close or reset
+        private bool boxDrawn = false;                      // Track state of text being drawn when user wins/dies - only need to draw once
+        private bool replayOn = false;                      // Replayability is toggleable, set to OFF by default
 
         private int gold = 0;                               // Currency - applies a crit effect to player damage
         private int healthPotion = 5;                       // Interactable buff - restores health
@@ -62,7 +65,7 @@ namespace Crawler
         {
             string inputRead = string.Empty;
 
-            if (mapPlaying == true)
+            if (mapPlaying == true && gameOver != true)
             {
                 char key = Console.ReadKey().KeyChar;
                 inputRead = key.ToString();
@@ -87,6 +90,7 @@ namespace Crawler
         {
             input = input.ToLower();                        // Inputs will therefore not be case sensitive - which can be annoying!
             bool quitting = false;
+            bool replaying = false;
             string[] allMaps = Directory.GetFiles(@"..\..\..\maps\");       // Get all maps within this specific directory
 
             for (int i = 0; i < allMaps.Length; i++)
@@ -99,6 +103,25 @@ namespace Crawler
             {
                 action = PlayerActions.QUIT;
                 quitting = true;
+            }
+
+            // User can toggle replayability on and off
+            if (input == "replay")
+            {
+                if (replayOn == true)                                       // If already enabled then disable it
+                {
+                    Console.WriteLine("You have disabled level replayability!\n");
+                    replayOn = false; 
+                }
+
+                else if (replayOn == false)                                 // If already disabled then enable it
+                {
+                    Console.WriteLine("You have enabled level replayability!\n");
+                    replayOn = true; 
+                }  
+
+
+                replaying = true;
             }
 
             if (input == "help" || input == "h")
@@ -114,6 +137,8 @@ namespace Crawler
                 Console.WriteLine("   1. Load map using 'load <mapname>'");
                 Console.WriteLine("   2. Start game using 'play'");
                 Console.WriteLine();
+                Console.WriteLine(" ├───────────────────────────────────┤");
+                Console.WriteLine("   Use 'replay' to play continuously  ");
                 Console.WriteLine(" ├───────────────────────────────────┤");
                 Console.WriteLine();
                 Console.WriteLine("            Available maps:");
@@ -136,6 +161,13 @@ namespace Crawler
                 Console.WriteLine("\n\n");
             }
 
+            else if (gameOver == true)
+            {
+                if (input == "y" || input == "yes") { replay = true; }
+                else if (input == "n" || input == "no") { replay = false; }
+                else { Replay(); }
+            }
+
             // If a map isnt already loaded then when the user inputs a load command, initialize the corresponding map file.
             else if (!mapLoaded)
             {
@@ -150,7 +182,7 @@ namespace Crawler
                     }
                 }
 
-                if (!mapLoaded)
+                if (!mapLoaded && !replaying)
                 {
                     // If the user input is incorrect
                     Console.WriteLine("-- INVALID INPUT --");
@@ -172,7 +204,7 @@ namespace Crawler
                 }
 
                 // If the user input is incorrect
-                else if (!quitting)
+                else if (!quitting && !replaying)
                 {
                     Console.WriteLine("-- INVALID INPUT --");
                     Console.WriteLine(" #. Input 'play' to continue\n\n");
@@ -277,7 +309,7 @@ namespace Crawler
 
                 if (charAtPos == '+')  
                 {
-                    pHealth += 5;
+                    pHealth += healthPotion;
                 }
 
                 currentChar = '.';
@@ -299,7 +331,90 @@ namespace Crawler
                 this.active = false;
             }
 
+            if (gameOver)
+            {
+                Replay();
+            }
+
             action = PlayerActions.NOTHING;                 // Reset 'action' after making an action.
+        }
+
+        /**
+        * Output text to screen when the player has beaten or lost the game
+        * Switch state of variables to change gamestate
+        */
+        public void Replay()
+        {
+            if (!boxDrawn)
+            {
+                if (pHealth <= 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine(" ╔═════════════════╗ ");
+                    Console.WriteLine(" ║                 ║ ");
+                    Console.WriteLine(" ║  YOU HAVE DIED  ║ ");
+                    Console.WriteLine(" ║                 ║ ");
+                    Console.WriteLine(" ╚═════════════════╝ ");
+                    Console.WriteLine();
+                }
+
+                else
+                {
+                    Console.WriteLine();
+                    Console.WriteLine(" ╔═════════════════╗ ");
+                    Console.WriteLine(" ║ CONGRATULATIONS ║ ");
+                    Console.WriteLine(" ║ YOU HAVE BEATEN ║ ");
+                    Console.WriteLine(" ║   THE DUNGEON   ║ ");
+                    Console.WriteLine(" ╚═════════════════╝ ");
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine("\n");
+
+                boxDrawn = true;
+            }
+
+            if (replayOn)
+            {
+                Console.WriteLine("Do you wish to replay? Yes / No");
+
+                string inputRead = Console.ReadLine();
+                Console.WriteLine();
+                ProcessUserInput(inputRead);
+
+                if (replay == true)
+                {
+                    Console.WriteLine();
+                    ProcessUserInput("help");
+
+                    gameOver = false;
+                    mapLoaded = false;
+                    mapPlaying = false;
+                    currentMapLoaded = false;
+                    boxDrawn = false;
+                    gameOver = false;
+
+                    stream = null;
+                    rows.Clear();
+                    map = new char[0][];
+                    height = 0;
+                    width = 0;
+
+                    gold = 0;
+                    healthPotion = 5;
+
+                    setPosition = false;
+                    currentChar = '.';
+
+                    pHealth = 20;
+                    pDamage = 10;
+                    monsterPositions.Clear();
+                    monsterMoveCount = 0;
+                }
+                else if (replay == false) { active = false; }
+            }
+
+            else { active = false; }
         }
 
         /*
@@ -403,7 +518,7 @@ namespace Crawler
             if (pHealth <= 0) 
             {
                 Console.WriteLine("\nYou have died and your journey has come to an end...\n");
-                GameOver();
+                Replay();
             }
 
             // monster is dead
@@ -525,39 +640,9 @@ namespace Crawler
 
                 if (currentChar == 'E')                     // Game ends if player enters the 'E' tile
                 {
-                    GameOver();
+                    gameOver = true;
                 }
             }
-        }
-
-        /**
-        * Output text to screen when the player has beaten or lost the game
-        * Switch state of variables to change gamestate
-        */ 
-        public void GameOver()
-        {
-            if (pHealth <=0)
-            {
-                Console.WriteLine(" ╔═════════════════╗ ");
-                Console.WriteLine(" ║                 ║ ");
-                Console.WriteLine(" ║  YOU HAVE DIED  ║ ");
-                Console.WriteLine(" ║                 ║ ");
-                Console.WriteLine(" ╚═════════════════╝ ");
-            }
-
-            else
-            {
-                Console.WriteLine(" ╔═════════════════╗ ");
-                Console.WriteLine(" ║ CONGRATULATIONS ║ ");
-                Console.WriteLine(" ║ YOU HAVE BEATEN ║ ");
-                Console.WriteLine(" ║    THE GAME!    ║ ");
-                Console.WriteLine(" ╚═════════════════╝ ");
-            }
-            Console.WriteLine("\n\n");
-
-            Console.WriteLine("\n\n");
-            gameOver = true;
-            active = false;
         }
 
         /**
@@ -754,7 +839,7 @@ namespace Crawler
 
             if (mapPlaying == true) { running = true; }     // Mad has been loaded and user has input 'play'
 
-            if (gameOver == true) { running = false; }      // The player has reached the Exit on the map and has won.
+            if (active == false) { running = false; }      // The player has reached the Exit on the map and has won.
 
             return running;
         }
