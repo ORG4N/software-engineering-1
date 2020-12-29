@@ -24,10 +24,11 @@ namespace Crawler
 
         private FileStream stream = null;                   // Persistent filestream
         private List<string> rows = new List<string>();     // List of all lines read from file
+        private List<int> rowsWidth = new List<int>();      // List of all lines' width
         private char[][] map = new char[0][];               // Persistent map variable
         private char[][] mapCopy;                           // This is a copy of the original map - changes will be applied to this version
+
         private int height = 0;                             // Vertical length of map
-        private int width = 0;                              // Horizontal length of the map
 
         private bool gameOver = false;                      // Track if game has ended
         private bool mapLoaded = false;                     // Has user selected map?
@@ -398,9 +399,9 @@ namespace Crawler
 
                     stream = null;
                     rows.Clear();
+                    rowsWidth.Clear();
                     map = new char[0][];
                     height = 0;
-                    width = 0;
 
                     setPosition = false;
                     currentChar = '.';
@@ -558,10 +559,12 @@ namespace Crawler
         public void GetMonsterPositions()
         {
             monsterPositions.Clear();
+            int k = 0;
+
             // Add all monster coordinates to a single list, can be found by incrementing a loop index by 2 at a time
             for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < rowsWidth[k]; x++)
                 {
                     if (mapCopy[y][x] == 'M')               // Monster is recognised by the M symbol
                     {
@@ -569,6 +572,7 @@ namespace Crawler
                         monsterPositions.Add(y);
                     }
                 }
+                k++;
             }
         }
 
@@ -645,7 +649,7 @@ namespace Crawler
 
                 GetCurrentMapState();                       // Draw the map
 
-                if (currentChar == 'E')                     // Game ends if player enters the 'E' tile
+                if (charAtPos == 'E')                     // Game ends if player enters the 'E' tile
                 {
                     gameOver = true;
                 }
@@ -674,7 +678,8 @@ namespace Crawler
                     while (!reader.EndOfStream)
                     {
                         string line = reader.ReadLine();    // Will read each line individually
-                        width = line.Length;                // Used to measure the amount of chars within each line 
+                        int width = line.Length;                // Used to measure the amount of chars within each line
+                        rowsWidth.Add(width);
                         rows.Add(line);                     // Add each line within the file to a list.
                     }
 
@@ -708,14 +713,16 @@ namespace Crawler
                 }
 
                 // Construct a jagged array to store each 'tile'.
+                int k = 0;
                 for (int y = 0; y < height; y++)
                 {
-                    map[y] = new char[width];
-                    for (int x = 0; x < width; x++)
+                    map[y] = new char[rowsWidth[k]];
+                    for (int x = 0; x < rowsWidth[k]; x++)
                     {
                         map[y][x] = rowChars[rowCharsCount];
                         rowCharsCount++;
                     }
+                    k++;
                 }
 
                 GetCurrentMapState();
@@ -762,45 +769,34 @@ namespace Crawler
         }
 
         /*
-         * A method that can be called to draw the map.
+         * A method that can be called to draw the map and basic HUD.
          */ 
         public char[][] DrawMap(char[][] map)
         {
             // Some code to just make the UI look neater
-            string border1 = "   ╔";
-            string border2 = "   ╚";
-
-            for (int i=0; i<width-8; i++)
-            {
-                border1 += "═";
-                border2 += "═";
-            }
-
-            border1 += "╗";
-            border2 += "╝";
-
-            Console.WriteLine(border1);
-            Console.WriteLine("     GOLD: {0}    HEALTH: {1}", gold, pHealth);    // Draw gold
-            Console.WriteLine(border2);
-            Console.WriteLine();
+            Console.WriteLine("╔══════════════════════════════════════╗");
+            Console.WriteLine("  GOLD: {0}    HEALTH: {1}     DAMAGE: {2}", gold, pHealth, pDamage);    // Draw gold, health and attack damage
+            Console.WriteLine("╚══════════════════════════════════════╝");
 
             // Draw feedback to the screen
-            if (charAtPos == 'G')
+            if (currentChar == 'G')
             {
                 Console.WriteLine(" Press 'E' to collect the GOLD!");
             }
 
-            if (charAtPos == '+')
+            if (currentChar == '+')
             {
                 Console.WriteLine(" Press 'E' to drink the POTION");
             }
 
+            int k = 0;
             for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < rowsWidth[k]; x++)
                 {
                     Console.Write(map[y][x]);
                 }
+                k++;
                 Console.WriteLine();
             }
             return map;
@@ -813,9 +809,10 @@ namespace Crawler
          */
         public int[] GetPlayerPosition()
         {
+            int k = 0;
             for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < rowsWidth[k]; x++)
                 {
                     if (mapCopy[y][x] == '@')               // Player is recognised by the @ symbol
                     {
@@ -824,6 +821,7 @@ namespace Crawler
                         setPosition = true;
                     }
                 }
+                k++;
             }
 
             return position;
