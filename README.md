@@ -22,6 +22,13 @@ These are the most prominent features that define what type of game CMD DUNGEON 
 ## Structure of code
 
 ## Additional Features
+* Players damage scales with gold
+* Monsters health scales with the amount of times the player replays - make the game more adventurous and challenging
+* Monsters are assigned damage and health properties randomly
+* Two new maps (mayhem.map and arena.map)
+* Monsters can randomly move onto any tiles but freeze every 5 turns
+* Help menu
+
 
 ## To-Do
 - [ ] Record video
