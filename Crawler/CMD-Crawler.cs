@@ -50,6 +50,7 @@ namespace Crawler
         private int mDamage;                                // Monster attack damage
         private int pHealth = 20;                           // Player health
         private int pDamage = 10;                           // player attack damage
+        private int difficultyMult = 1;
 
         private Random randNum = new Random();              // using the random class I can generate random numbers
 
@@ -65,6 +66,7 @@ namespace Crawler
         {
             string inputRead = string.Empty;
 
+            // Player can input a key at a time and make a movement without submitting action with 'Enter'
             if (mapPlaying == true && gameOver != true)
             {
                 char key = Console.ReadKey().KeyChar;
@@ -228,7 +230,7 @@ namespace Crawler
 
 
                 // Player can collect gold if they are on the correct tile and input 'E'
-                if (charAtPos == 'G')                                
+                if (currentChar == 'G')                                
                 {
                     if (input == "e")
                     {
@@ -237,7 +239,7 @@ namespace Crawler
                 }
 
                 // Player can also interact with Health potions
-                if (charAtPos == '+')
+                if (currentChar == '+')
                 {
                     if (input == "e")
                     {
@@ -301,13 +303,13 @@ namespace Crawler
 
             if (GetPlayerAction() == 5)                     // Input = 'E', pick-up gold or drink health potion
             {
-                if (charAtPos == 'G')
+                if (currentChar == 'G')
                 {
                     gold += 1;
                     pDamage = PlayerDamage();                   // Damage is determined by gold
                 }
 
-                if (charAtPos == '+')  
+                if (currentChar == '+')  
                 {
                     pHealth += healthPotion;
                 }
@@ -400,16 +402,15 @@ namespace Crawler
                     height = 0;
                     width = 0;
 
-                    gold = 0;
-                    healthPotion = 5;
-
                     setPosition = false;
                     currentChar = '.';
 
                     pHealth = 20;
-                    pDamage = 10;
+                    pDamage = PlayerDamage();
                     monsterPositions.Clear();
                     monsterMoveCount = 0;
+
+                    difficultyMult *= 2;
                 }
                 else if (replay == false) { active = false; }
             }
@@ -523,8 +524,12 @@ namespace Crawler
 
             // monster is dead
             else if (mHealth <= 0) 
-            { 
-                Console.WriteLine("\nYou have slain the monster!\n");
+            {
+                int goldDropped = randNum.Next(0, 2);                   // Monsters will drop between 0 to 2 gold, at random, when slain
+                gold += goldDropped;
+
+                Console.WriteLine("\nYou have slain the monster!");
+                Console.WriteLine("The monster dropped {0} gold. \n", goldDropped);
                 GetMonsterPositions();
 
                 for(int i=0; i<monsterPositions.Count; i+=2)
@@ -538,6 +543,8 @@ namespace Crawler
                     if (mapCopy[y][x - 1] == '@') { mapCopy[y][x] = '.'; }
                     if (mapCopy[y][x + 1] == '@') { mapCopy[y][x] = '.'; }
                 }
+
+                gold += randNum.Next(0, 2);
 
                 SetMonsterDamage();
                 SetMonsterHealth();
@@ -862,18 +869,24 @@ namespace Crawler
         {
             int type = randNum.Next(1, 5);
 
-            if (type <= 2) { mHealth = 10; }
+            if (type <= 2) { mHealth = 10 + difficultyMult; }
 
-            if (type >= 3 && type <= 4) { mHealth = 12; }
+            if (type >= 3 && type <= 4) { mHealth = 12 + difficultyMult; }
 
-            if (type == 5) { mHealth = 23; }
+            if (type == 5) { mHealth = 23 + difficultyMult; }
         }
 
         // Determine player damage via calculating the critical multiplyer (influenced by gold)
         public int PlayerDamage()
         {
-            int crit = 1 + (gold/10);       // Gold will be used to modify the player's strength
-            int damage = pDamage * crit;    // Damage = default damage * critical multiplyer
+            int crit = 1;
+            int damage = pDamage;
+
+            if (gold / 15 != 0)               // Gold will be used to modify the player's strength
+            {
+                crit *= 2;
+                damage = pDamage + crit;      // Damage = default damage * critical multiplyer
+            }
 
             return damage;
         }
