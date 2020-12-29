@@ -37,6 +37,7 @@ namespace Crawler
         private bool replay;                                // State is taken from user input - determines whether to close or reset
         private bool boxDrawn = false;                      // Track state of text being drawn when user wins/dies - only need to draw once
         private bool replayOn = false;                      // Replayability is toggleable, set to OFF by default
+        private bool hardMode = false;                      // Toggleable - monsters can attack player without player pressing Space
 
         private int gold = 0;                               // Currency - applies a crit effect to player damage
         private int healthPotion = 5;                       // Interactable buff - restores health
@@ -94,6 +95,7 @@ namespace Crawler
             input = input.ToLower();                        // Inputs will therefore not be case sensitive - which can be annoying!
             bool quitting = false;
             bool replaying = false;
+            bool settingDifficulty = false;
             string[] allMaps = Directory.GetFiles(@"..\..\..\maps\");       // Get all maps within this specific directory
 
             for (int i = 0; i < allMaps.Length; i++)
@@ -109,7 +111,7 @@ namespace Crawler
             }
 
             // User can toggle replayability on and off
-            if (input == "replay")
+            if (input == "replay" || input == "all")
             {
                 if (replayOn == true)                                       // If already enabled then disable it
                 {
@@ -122,10 +124,26 @@ namespace Crawler
                     Console.WriteLine("You have enabled level replayability!\n");
                     replayOn = true; 
                 }  
-
-
                 replaying = true;
             }
+
+            // User can toggle hardmode on and off - (due to the possibility of tests not suceeding when always enabled)
+            if (input == "hard" || input == "all")
+            {
+                if (hardMode == true)                                       // If already enabled then disable it
+                {
+                    Console.WriteLine("You have disabled HARD MODE!\n");
+                    hardMode = false;
+                }
+
+                else if (hardMode == false)                                 // If already disabled then enable it
+                {
+                    Console.WriteLine("You have enabled HARD MODE!\n");
+                    hardMode = true;
+                }
+                settingDifficulty = true;
+            }
+
 
             if (input == "help" || input == "h")
             {
@@ -141,7 +159,10 @@ namespace Crawler
                 Console.WriteLine("   2. Start game using 'play'");
                 Console.WriteLine();
                 Console.WriteLine(" ├───────────────────────────────────┤");
+                Console.WriteLine();
                 Console.WriteLine("   Use 'replay' to play continuously  ");
+                Console.WriteLine("   Use 'hard' to increase difficulty  ");
+                Console.WriteLine();
                 Console.WriteLine(" ├───────────────────────────────────┤");
                 Console.WriteLine();
                 Console.WriteLine("            Available maps:");
@@ -185,7 +206,7 @@ namespace Crawler
                     }
                 }
 
-                if (!mapLoaded && !replaying)
+                if (!mapLoaded && !replaying && !settingDifficulty)
                 {
                     // If the user input is incorrect
                     Console.WriteLine("-- INVALID INPUT --");
@@ -207,7 +228,7 @@ namespace Crawler
                 }
 
                 // If the user input is incorrect
-                else if (!quitting && !replaying)
+                else if (!quitting && !replaying && !settingDifficulty)
                 {
                     Console.WriteLine("-- INVALID INPUT --");
                     Console.WriteLine(" #. Input 'play' to continue\n\n");
@@ -324,7 +345,7 @@ namespace Crawler
                 if (charAtPos == 'M')
                 {
                     Console.WriteLine("You swing your sword and have struck MONSTER FLESH!\n");
-                    Combat();
+                    Combat("player");
                 }
 
                 else {Console.WriteLine("You swing your sword and have struck NOTHING...\n"); }
@@ -339,6 +360,9 @@ namespace Crawler
             {
                 Replay();
             }
+
+            if (mapPlaying == true) { DrawMap(mapCopy); }
+
 
             action = PlayerActions.NOTHING;                 // Reset 'action' after making an action.
         }
@@ -463,10 +487,18 @@ namespace Crawler
                         j = monsterPositionsCopy[0];
                         k = monsterPositionsCopy[1];
 
-                        // Move player char to next tile
-                        mapCopy[k][j] = 'M';
-                        monsterPositions[i] = monsterPositionsCopy[0];
-                        monsterPositions[i + 1] = monsterPositionsCopy[1];
+                        // Move monster char to next tile
+                        if (hardMode && mapCopy[k][j] == '@')
+                        {
+                            Combat("monster");
+                        }
+
+                        else
+                        {
+                            mapCopy[k][j] = 'M';
+                            monsterPositions[i] = monsterPositionsCopy[0];
+                            monsterPositions[i + 1] = monsterPositionsCopy[1];
+                        }
                     }
                 }
             }
@@ -484,40 +516,80 @@ namespace Crawler
         * Attack sequence - inspired by turn based games, except it is very simple
         * Mainly a lot of writing to the console
         */
-        public void Combat()
+        public void Combat(string entity)
         {
             int surpriseAttack = randNum.Next(1, 100);      // Initiative - who attacks first 
 
-            if (surpriseAttack <= 50)
+            if (entity == "player")
             {
-                Console.WriteLine("Your slash catches the monster off-guard!");
-
-
-                while (mHealth > 0 && pHealth > 0)
+                if (surpriseAttack <= 50)
                 {
-                    Console.WriteLine("Player  health: {0}", pHealth);
-                    Console.WriteLine("Monster health: {0}\n", mHealth);
+                    Console.WriteLine("Your slash catches the monster off-guard!");
 
-                    PlayerAttack();       // player attacks first
-                    MonsterAttack();      // monster attacks second
 
-                    Console.WriteLine();
+                    while (mHealth > 0 && pHealth > 0)
+                    {
+                        Console.WriteLine("Player  health: {0}", pHealth);
+                        Console.WriteLine("Monster health: {0}\n", mHealth);
+
+                        PlayerAttack();       // player attacks first
+                        MonsterAttack();      // monster attacks second
+
+                        Console.WriteLine();
+                    }
+                }
+
+                else
+                {
+                    Console.WriteLine("The monster evades your attack!");
+
+                    while (mHealth > 0 && pHealth > 0)
+                    {
+                        Console.WriteLine("Player  health: {0}", pHealth);
+                        Console.WriteLine("Monster health: {0}\n", mHealth);
+
+                        MonsterAttack();       // monster attacks first
+                        PlayerAttack();        // player attacks second
+
+                        Console.WriteLine();
+                    }
                 }
             }
 
-            else
+            if (entity == "monster")
             {
-                Console.WriteLine("The monster evades your attack!");
+                Console.WriteLine("Suddenly, a monster emerges from the darkness. Killing intent fills its eyes...\n");
 
-                while (mHealth > 0 && pHealth > 0)
+                if (surpriseAttack <= 50)
                 {
-                    Console.WriteLine("Player  health: {0}", pHealth);
-                    Console.WriteLine("Monster health: {0}\n", mHealth);
+                    Console.WriteLine("A loud 'CLINK' echoes throughout the room as the monster's claws hit your armor!\n");
 
-                    MonsterAttack();       // monster attacks first
-                    PlayerAttack();        // player attacks second
+                    while (mHealth > 0 && pHealth > 0)
+                    {
+                        Console.WriteLine("Player  health: {0}", pHealth);
+                        Console.WriteLine("Monster health: {0}\n", mHealth);
 
-                    Console.WriteLine();
+                        MonsterAttack();       // monster attacks first
+                        PlayerAttack();        // player attacks second
+
+                        Console.WriteLine();
+                    }
+                }
+
+                else
+                {
+                    Console.WriteLine("You raise your sword and protect yourself from the ambush!\n");
+
+                    while (mHealth > 0 && pHealth > 0)
+                    {
+                        Console.WriteLine("Player  health: {0}", pHealth);
+                        Console.WriteLine("Monster health: {0}\n", mHealth);
+
+                        PlayerAttack();         // player attacks first
+                        MonsterAttack();        // monster attacks second
+
+                        Console.WriteLine();
+                    }
                 }
             }
 
@@ -554,7 +626,6 @@ namespace Crawler
 
                 SetMonsterDamage();
                 SetMonsterHealth();
-                DrawMap(mapCopy);
             }
         }
 
@@ -610,7 +681,7 @@ namespace Crawler
 
             if (charAtPos == '#') {canMove = false;}        // Player and Monster cannot move onto tiles that are Walls
 
-            if (charAtPos == '@') { canMove = false; }      // Player and Monster cannot move onto tiles that are Players 
+            if (charAtPos == '@' && entity == "monster" && hardMode) { canMove = true; }      // Monster can move onto tiles that are Players 
 
             if (charAtPos == 'M') {canMove = false; }       // Player and Monster cannot move onto tiles that are Monsters
 
@@ -749,10 +820,7 @@ namespace Crawler
          */
         public char[][] GetOriginalMap()
         {
-            // Draw map to screen
-            DrawMap(this.map);
-
-            return this.map;
+            return map;
         }
 
         /*
@@ -772,10 +840,6 @@ namespace Crawler
                 }
                 currentMapLoaded = true;
             }
-
-            else { DrawMap(mapCopy); }
-
-            // Draw the copy to the screen
 
             return mapCopy;
         }
