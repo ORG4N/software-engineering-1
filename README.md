@@ -15,9 +15,17 @@ These are the most prominent features that define what type of game CMD DUNGEON 
 
 ## Getting Started
 ### Installation
+![Installation gif]()
+
 ### Navigating the menu
+![using the load and play commands](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Load%20and%20Play.gif)
 
 ## Gameplay Demo and Walkthrough
+### Adventuring
+![Simple gameplay functionality](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Simple%20Gameplay.gif)
+
+### Combat
+![Player VS Enemy combat](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Combat.gif)
 
 ## Structure of code
 
