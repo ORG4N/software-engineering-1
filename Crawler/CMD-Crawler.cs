@@ -288,6 +288,8 @@ namespace Crawler
                 GetPlayerPosition();
             }
 
+            if (mapPlaying) { Console.WriteLine("\n\n\n\n\n\n\n"); }    // othwerise the screen becomes heavily cluttered
+
             position.CopyTo(positionCopy, 0);               // Copy the current position to a temporary variable
 
 
@@ -360,6 +362,7 @@ namespace Crawler
             {
                 Replay();
             }
+
 
             if (mapPlaying == true) { DrawMap(mapCopy); }
 
@@ -876,6 +879,7 @@ namespace Crawler
                 k++;
                 Console.WriteLine();
             }
+
             return map;
         }
 
@@ -919,7 +923,7 @@ namespace Crawler
         {
             bool running = false;
 
-            if (mapPlaying == true) { running = true; }     // Mad has been loaded and user has input 'play'
+            if (mapPlaying == true) { running = true; }     // Map has been loaded and user has input 'play'
 
             if (active == false) { running = false; }      // The player has reached the Exit on the map and has won.
 
