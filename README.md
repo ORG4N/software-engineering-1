@@ -16,6 +16,21 @@ These are the most prominent features that define what type of game CMD DUNGEON 
 ### Installation
 ![Installation gif]()
 
+
+1. Download files from repo to local machine
+   1. Clone from GitHub, OR
+   2. Download as ZIP and extract 
+2. Run the .exe to open the game (coursework2-ORG4N > Crawler > CMD-Crawler.exe)
+   1. Double click on the CMD-Crawler.exe within file explorer, or
+   2. Execute the .exe through the Command Line
+   
+* Further instructions for executing .exe through Command Line:
+   * Navigate to the following path using cd: coursework2-ORG4N > Crawler
+   * Input the following command: Start-Process CMD-Crawler.exe.lnk
+   
+(Refer to GIF to see visual instructions on how to open from within the Command Line)
+ 
+
 ### Navigating the menu
 ![using the load and play commands](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Load%20and%20Play.gif)
 Upon opening CMD DUNGEON the player will be expected to choose a specific map and submit a request to play their chosen map. The user can do this using the following two commands:
