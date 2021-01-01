@@ -14,9 +14,6 @@ These are the most prominent features that define what type of game CMD DUNGEON 
 
 ## Getting Started
 ### Installation
-![Installation gif]()
-
-
 1. Download files from repo to local machine
    1. Clone from GitHub, OR
    2. Download as ZIP and extract 
@@ -24,6 +21,9 @@ These are the most prominent features that define what type of game CMD DUNGEON 
    1. Double click on the CMD-Crawler.exe within file explorer, or
    2. Execute the .exe through the Command Line
    
+![Installation gif](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Installation.gif)
+
+
 * Further instructions for executing .exe through Command Line:
    * Navigate to the following path using cd: coursework2-ORG4N > Crawler
    * Input the following command: Start-Process CMD-Crawler.exe.lnk
