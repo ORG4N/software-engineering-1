@@ -33,8 +33,15 @@ Within the dungeon the player can create their own story - how they want to play
 > *A demonstration of the **'simple.map'** level.*
 ![Simple gameplay functionality](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Simple%20Gameplay.gif)
 
-The maps in CMD DUNGEON are built from tiles, of which there are a variety of.
-![Tilemap]
+#### Tilemap:
+Player | Wall | Empty Space | Gold | Monster | Exit | 
+-------|------|-------------|------|---------|-------
+@ | # | Period/Fullstop | G | M | E 
+
+#### Controls:
+Up | Left | Down | Right | Interact | Attack | Quit
+---|-----|-----|------|---------|-------|-----
+W | A | S | D | E | Spacebar | Q |
 
 Players must navigate through the maze-like dungeon levels to find the Exit. Among their journey they may notice Monsters and Gold.
 
@@ -77,14 +84,6 @@ CMD-DUNGEON's framework also supports multiple independent monsters, each with t
 The game I have created is challenging and based on luck. Therefore, Health Potion tiles can be recognised on maps as a plus (**+**) symbol. Like Gold, these potions are interactable with the 'E' input. However, be aware that your Health resets to the base value upon reaching the exit.
 
 ## Structure of code
-
-## Additional Features
-* Players damage scales with gold
-* Monsters health scales with the amount of times the player replays - make the game more adventurous and challenging
-* Monsters are assigned damage and health properties randomly
-* Two new maps (mayhem.map and arena.map)
-* Monsters can randomly move onto any tiles but freeze every 5 turns
-* Help menu
 
 
 ## To-Do
