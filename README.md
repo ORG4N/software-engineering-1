@@ -4,6 +4,8 @@
 
 CMD DUNGEON is an exciting but compact game that has been designed for Command Line Interfaces. From slaying monsters to collecting gold, CMD DUNGEON takes the player on a high-risk adventure within the Command Line.
 
+#### Video: 
+
 ## Gameplay Features
 These are the most prominent features that define what type of game CMD DUNGEON truly is:
 * PVE Combat
@@ -126,12 +128,80 @@ SetMonsterDamage()| Called at the start of combat, to determine a monster's dama
 SetMonsterHealth()|  Scales with the amount of map replays. The game will get harder the longer it is played for. Invoked alongside SetMonsterDamage() at the start of Combat().
 PlayerDamage()| Scales expontentially with Gold. The algorithm applies a critical effect to damage and therefore makes collecting gold a necessity later on in the game. Called whenever Gold is interacted with.
 
+As you can see by looking at the initial commit, CMD-DUNGEON's framework has additional methods that implement additional features. I have expanded upon the initial codebase and made the game something original.
 
-## To-Do
-- [ ] Record video
-- [ ] Record short Gameplay Demo gif
-- [ ] Record short Getting Started gif
-- [ ] Explain symbols and commands and controls im Getting Started
-- [ ] Explain structure of code (methods, game flow, game states)
-- [ ] Explain usage of methods
-- [ ] Explain which features I have added 
+### Algorithms
+The first pre-dominant algorithm within CMD-DUNGEON is the process of iterating through the map file column-wise and thne width-wise:
+
+    int rowCharsCount = 0;
+    int k = 0;
+    for (int y = 0; y < height; y++)
+    {
+        map[y] = new char[rowsWidth[k]];
+        for (int x = 0; x < rowsWidth[k]; x++)
+        {
+            map[y][x] = rowChars[rowCharsCount];
+            rowCharsCount++;
+        }
+        k++;
+    }
+
+This algorithm is used 4 times throughout the code (altough the main body of the latter for loop is adapted) and is primarily used to allow me to find, modify, or draw elements from the map or mapCopy jagged arrays.
+
+The following four methods implement a version of this algorithm:
+* GetMonsterPositions()
+* GetPlayerPosition()
+* InitializeMap()
+* DrawMap()
+
+The second most fundamental algorithm within CMD-DUNGEON is the Movement algorithm: 
+
+Within **GameLoop()**:
+
+      position.CopyTo(positionCopy, 0);  
+      
+      if (GetPlayerAction() == 1) {
+         positionCopy[1] = y - 1;
+         MakeMove();
+      }
+      
+      if (GetPlayerAction() == 2) {
+          positionCopy[0] = x + 1;
+          MakeMove();
+      }
+
+      if (GetPlayerAction() == 3) {
+          positionCopy[1] = y + 1;
+          MakeMove();
+      }
+
+      if (GetPlayerAction() == 4) {
+          positionCopy[0] = x - 1;
+          MakeMove();
+      } 
+ 
+Within **MakeMove()**:
+
+      int x, y;
+       
+      x = position[0];
+      y = position[1];
+      mapCopy[y][x] = currentChar;
+
+      x = positionCopy[0];
+      y = positionCopy[1];
+
+      currentChar = mapCopy[y][x];
+
+      mapCopy[y][x] = '@';
+      positionCopy.CopyTo(position, 0);
+      
+> Note: *some code has been abstracted out of these snippets to make it easier to focus specifically on the important parts.*
+
+Within the gameloop a copy of the current player position is created and used to make a theoretical move (one that does not get drawn to the screen). The coordinates within this player position copy array are modified and checked for validity within the CanMove method (abstracted out to focus on HOW the movement is applied and not WHEN). 
+
+Within MakeMove() the algorithm firstly replaces the current position with the previously known char at this specific coordinate (stored before making the move as seen in `currentChar = mapCopy[y][x]`). After this, the coordinates within the array `positionCopy` must be read into `x` and `y` and used to draw the player character at the new position. The `position` array is then updated to what the new move made is. 
+
+Rather than calling GetPlayerPosition() and iterating through the array to find the player coordinates after each action, I believe that this method should be more efficient, especially when the maps are large.
+
+The structure of this algorithm is also applied when moving monsters at random, within MoveMonsters().
