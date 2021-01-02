@@ -99,6 +99,20 @@ CMD-DUNGEON's framework also supports multiple independent monsters, each with t
 The game I have created is challenging and based on luck. Therefore, Health Potion tiles can be recognised on maps as a plus (**+**) symbol. Like Gold, these potions are interactable with the 'E' input. However, be aware that your Health resets to the base value upon reaching the exit.
 
 ## Structure of code
+In this section I will explore the structure of CMD DUNGEON and present each method's purpose.
+
+Method|Description 
+------|-------------
+Main()| This method contains the main game loop that will run whilst the user does not command the game to close, or the game state has not changed to inactive. This method can be thought of as a container for the game - everything will be run inside the while loop.
+ReadUserInput()| User input can be read a key at a time (when the game is in the playing state), or it can be read until the user submits the input with the Enter key. These inputs can then be fed into ProcessUserInput().
+ProcessUserInput()| Depending on certain inputs, the game has to react a certain way. The current gamestate must also be considered when processing inputs. The method is generally used to change gamestate but also set the current action that should be further carried out within the GameLoop() method.
+GameLoop()| This method responds to the processed input and is therefore used to: make character movements; interact with Gold, Monsters, and Health Potions; and, drawing the map/HUD to the screen. To make my game organised I have split significant pieces of code into their own methods and call them within GameLoop().
+InitializeMap()| Within the game files are 2D maps that can be loaded as levels for the player to play. This method is called upon loading a map, and it is tailored to work with any map witthin the game files. Using a jagged array also gives this method the advantage of being compatable with irregularly shaped maps.
+GetOriginalMap()| This method simply returns the initial state of the map that is created via InitializeMap().
+GetCurrentMapState()| A copy of the original map is made (mapCopy). The purpose of this copy is so that changes can be applied, and if the initial map needs to be drawn again then it does not need to be re-initialised.
+DrawMap()| Having an independent method to draw the mapCopy to the screen means that the code can be easily re-used. This method also includes code to write a HUD to the screen, and even provide textual feedback to the player if they are on an interactable tile - such as Gold or Health Potions.
+GetPlayerPosition()| The mapCopy is iterated through until the x and y positions of the player are found. This method is used within GameLoop() to get the original starting position of the player.
+GetPlayerAction()| The enum action stores a playerstate, such as the direction of movement or an interaction. The value of this enum is changed and set within ProcessUserInput() to be used within GameLoop(), wherein GetPlayerAction() is called to return the int representation of the enum.
 
 
 ## To-Do
