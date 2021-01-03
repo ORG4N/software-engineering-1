@@ -4,6 +4,8 @@
 
 CMD DUNGEON is an exciting but compact game that has been designed for Command Line Interfaces. From slaying monsters to collecting gold, CMD DUNGEON takes the player on a high-risk adventure within the Command Line.
 
+#### Video: 
+
 ## Gameplay Features
 These are the most prominent features that define what type of game CMD DUNGEON truly is:
 * PVE Combat
@@ -14,9 +16,6 @@ These are the most prominent features that define what type of game CMD DUNGEON 
 
 ## Getting Started
 ### Installation
-![Installation gif]()
-
-
 1. Download files from repo to local machine
    1. Clone from GitHub, OR
    2. Download as ZIP and extract 
@@ -24,6 +23,9 @@ These are the most prominent features that define what type of game CMD DUNGEON 
    1. Double click on the CMD-Crawler.exe within file explorer, or
    2. Execute the .exe through the Command Line
    
+![Installation gif](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Installation.gif)
+
+
 * Further instructions for executing .exe through Command Line:
    * Navigate to the following path using cd: coursework2-ORG4N > Crawler
    * Input the following command: Start-Process CMD-Crawler.exe.lnk
@@ -99,13 +101,107 @@ CMD-DUNGEON's framework also supports multiple independent monsters, each with t
 The game I have created is challenging and based on luck. Therefore, Health Potion tiles can be recognised on maps as a plus (**+**) symbol. Like Gold, these potions are interactable with the 'E' input. However, be aware that your Health resets to the base value upon reaching the exit.
 
 ## Structure of code
+In this section I will explore the structure of CMD DUNGEON and present each method's purpose.
 
+Method|Description 
+------|-------------
+Main()| This method contains the main game loop that will run whilst the user does not command the game to close, or the game state has not changed to inactive. This method can be thought of as a container for the game - everything will be run inside the while loop.
+ReadUserInput()| User input can be read a key at a time (when the game is in the playing state), or it can be read until the user submits the input with the Enter key. These inputs can then be fed into ProcessUserInput().
+ProcessUserInput()| Depending on certain inputs, the game has to react a certain way. The current gamestate must also be considered when processing inputs. The method is generally used to change gamestate but also set the current action that should be further carried out within the GameLoop() method.
+GameLoop()| This method responds to the processed input and is therefore used to: make character movements; interact with Gold, Monsters, and Health Potions; and, drawing the map/HUD to the screen. To make my game organised I have split significant pieces of code into their own methods and call them within GameLoop().
+InitializeMap()| Within the game files are 2D maps that can be loaded as levels for the player to play. This method is called upon loading a map, and it is tailored to work with any map witthin the game files. Using a jagged array also gives this method the advantage of being compatable with irregularly shaped maps.
+GetOriginalMap()| This method simply returns the initial state of the map that is created via InitializeMap().
+GetCurrentMapState()| A copy of the original map is made (mapCopy). The purpose of this copy is so that changes can be applied, and if the initial map needs to be drawn again then it does not need to be re-initialised.
+DrawMap()| Having an independent method to draw the mapCopy to the screen means that the code can be easily re-used. This method also includes code to write a HUD to the screen, and even provide textual feedback to the player if they are on an interactable tile - such as Gold or Health Potions.
+GetPlayerPosition()| The mapCopy is iterated through until the x and y positions of the player are found. This method is used within GameLoop() to get the original starting position of the player.
+GetMonsterPositions()| Similar to the previous method, this method gets the positions of the 'M' symbols (note the plurality). Therefore, to store various x and y posittions a list is used, with every 2 elements being one single coordinate.
+GetPlayerAction()| The enum action stores a playerstate, such as the direction of movement or an interaction. The value of this enum is changed and set within ProcessUserInput() to be used within GameLoop(), wherein GetPlayerAction() is called to return the int representation of the enum.
+GameIsRunning()| The gamestate running can be determined via logic. The purpose of this method is for testing purposes and overall has no effect on the game.
+CanMove()| By creating a copy of the current position and then applying a theoretical movement to this copy, the method can determine if whether the movement the player is attempting to make is legal or invalid. This method has been tailored for use by both Monsters and Players, and therefore has an Entity parameter to differentiate between whatever entity is performing the action.
+MakeMove()| After assessing the validity of the move, the movement is either applied to the original player position, or feedback about the invalidity of the movement is drawn to the screen and no movement is made. Likewise, if the movement is into the Exit tile the gamestate is set to game over.
+MoveMonsters()| An algorithm similar to the above method is used when moving the monsters, however it has been adapted to move multiple monsters and each of them in a random direction. This method also uses CanMove() to ascertain validity of this randomly generated movement. If hardmode is enabled and a monster moves onto a player tile then the player is instantly and automatically attacked, without requirng confirmation.
+Replay()| This method is invoked when the player reaches the exit. If the user has enabled replayability then they are given an option to load a new map, otherwise the game ends. In the case that the player chooses to replay then all of the class variables are reset to their default values, and lists are cleared - except from the gold counter, which carries over into the next level.
+Combat()| Combat has been previously described within this readme. It is called within the GameLoop() method whenever the player has input Spacebar and there is a monster on the opposing tile. Players may die in Combat() which will then invoke Replay().
+MonsterAttack()| Monster damage is deducted from player health and the damage recieved is drawn to the screen. Called within Combat().
+PlayerAttack()| Player damage is deducted from monster health and the damage dealt is drawn to the screen. Called within Combat().
+SetMonsterDamage()| Called at the start of combat, to determine a monster's damage stats. There are three tiers - hard, medium, easy. Uses the random class to determine the monster's strength.
+SetMonsterHealth()|  Scales with the amount of map replays. The game will get harder the longer it is played for. Invoked alongside SetMonsterDamage() at the start of Combat().
+PlayerDamage()| Scales expontentially with Gold. The algorithm applies a critical effect to damage and therefore makes collecting gold a necessity later on in the game. Called whenever Gold is interacted with.
 
-## To-Do
-- [ ] Record video
-- [ ] Record short Gameplay Demo gif
-- [ ] Record short Getting Started gif
-- [ ] Explain symbols and commands and controls im Getting Started
-- [ ] Explain structure of code (methods, game flow, game states)
-- [ ] Explain usage of methods
-- [ ] Explain which features I have added 
+As you can see by looking at the initial commit, CMD-DUNGEON's framework has additional methods that implement additional features. I have expanded upon the initial codebase and made the game something original.
+
+### Algorithms
+The first pre-dominant algorithm within CMD-DUNGEON is the process of iterating through the map file column-wise and thne width-wise:
+
+    int rowCharsCount = 0;
+    int k = 0;
+    for (int y = 0; y < height; y++)
+    {
+        map[y] = new char[rowsWidth[k]];
+        for (int x = 0; x < rowsWidth[k]; x++)
+        {
+            map[y][x] = rowChars[rowCharsCount];
+            rowCharsCount++;
+        }
+        k++;
+    }
+
+This algorithm is used 4 times throughout the code (altough the main body of the latter for loop is adapted) and is primarily used to allow me to find, modify, or draw elements from the map or mapCopy jagged arrays.
+
+The following four methods implement a version of this algorithm:
+* GetMonsterPositions()
+* GetPlayerPosition()
+* InitializeMap()
+* DrawMap()
+
+The second most fundamental algorithm within CMD-DUNGEON is the Movement algorithm: 
+
+Within **GameLoop()**:
+
+      position.CopyTo(positionCopy, 0);  
+      
+      if (GetPlayerAction() == 1) {
+         positionCopy[1] = y - 1;
+         MakeMove();
+      }
+      
+      if (GetPlayerAction() == 2) {
+          positionCopy[0] = x + 1;
+          MakeMove();
+      }
+
+      if (GetPlayerAction() == 3) {
+          positionCopy[1] = y + 1;
+          MakeMove();
+      }
+
+      if (GetPlayerAction() == 4) {
+          positionCopy[0] = x - 1;
+          MakeMove();
+      } 
+ 
+Within **MakeMove()**:
+
+      int x, y;
+       
+      x = position[0];
+      y = position[1];
+      mapCopy[y][x] = currentChar;
+
+      x = positionCopy[0];
+      y = positionCopy[1];
+
+      currentChar = mapCopy[y][x];
+
+      mapCopy[y][x] = '@';
+      positionCopy.CopyTo(position, 0);
+      
+> Note: *some code has been abstracted out of these snippets to make it easier to focus specifically on the important parts.*
+
+Within the gameloop a copy of the current player position is created and used to make a theoretical move (one that does not get drawn to the screen). The coordinates within this player position copy array are modified and checked for validity within the CanMove method (abstracted out to focus on HOW the movement is applied and not WHEN). 
+
+Within MakeMove() the algorithm firstly replaces the current position with the previously known char at this specific coordinate (stored before making the move as seen in `currentChar = mapCopy[y][x]`). After this, the coordinates within the array `positionCopy` must be read into `x` and `y` and used to draw the player character at the new position. The `position` array is then updated to what the new move made is. 
+
+Rather than calling GetPlayerPosition() and iterating through the array to find the player coordinates after each action, I believe that this method should be more efficient, especially when the maps are large.
+
+The structure of this algorithm is also applied when moving monsters at random, within MoveMonsters().
