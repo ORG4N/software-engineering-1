@@ -38,6 +38,7 @@ namespace Crawler
         private bool boxDrawn = false;                      // Track state of text being drawn when user wins/dies - only need to draw once
         private bool replayOn = false;                      // Replayability is toggleable, set to OFF by default
         private bool hardMode = false;                      // Toggleable - monsters can attack player without player pressing Space
+        private bool history = true;                        // A nicer way of drawing the game - but less detailed
 
         private int gold = 0;                               // Currency - applies a crit effect to player damage
         private int healthPotion = 5;                       // Interactable buff - restores health
@@ -96,7 +97,16 @@ namespace Crawler
             bool quitting = false;
             bool replaying = false;
             bool settingDifficulty = false;
+            bool settingHistory = false;
             string[] allMaps = Directory.GetFiles(@"..\..\..\maps\");       // Get all maps within this specific directory
+
+            if (history == false &&  (input != "yes" || input != "no" || input != "y" || input != "n"))     // screen is only cleared if history is disabled   
+            {                                                                                               // (history is enabled by default)
+                try { Console.Clear(); }                 // Clear console, get rid of past drawn items           
+
+                catch (IOException) { history = true; }
+            }
+
 
             for (int i = 0; i < allMaps.Length; i++)
             {
@@ -144,6 +154,26 @@ namespace Crawler
                 settingDifficulty = true;
             }
 
+            // User can toggle hardmode on and off - (due to the possibility of tests not suceeding when always enabled)
+            if (input == "history")
+            {
+                if (history == true)                                       // If already enabled then disable it
+                {
+                    try { Console.Clear(); }
+
+                    catch (IOException) { history = false; }
+
+                    Console.WriteLine("You have disabled HISTORY!\n");
+                    history = false;
+                }
+
+                else if (history == false)                                 // If already disabled then enable it
+                {
+                    Console.WriteLine("You have enabled HISTORY!\n");
+                    history = true;
+                }
+                settingHistory = true;
+            }
 
             if (input == "help" || input == "h")
             {
@@ -206,7 +236,7 @@ namespace Crawler
                     }
                 }
 
-                if (!mapLoaded && !replaying && !settingDifficulty)
+                if (!mapLoaded && !replaying && !settingDifficulty && !settingHistory)
                 {
                     // If the user input is incorrect
                     Console.WriteLine("-- INVALID INPUT --");
@@ -228,7 +258,7 @@ namespace Crawler
                 }
 
                 // If the user input is incorrect
-                else if (!quitting && !replaying && !settingDifficulty)
+                else if (!quitting && !replaying && !settingDifficulty && !settingHistory)
                 {
                     Console.WriteLine("-- INVALID INPUT --");
                     Console.WriteLine(" #. Input 'play' to continue\n\n");
@@ -288,7 +318,7 @@ namespace Crawler
                 GetPlayerPosition();
             }
 
-            if (mapPlaying) { Console.WriteLine("\n\n\n\n\n\n\n"); }    // othwerise the screen becomes heavily cluttered
+            if (mapPlaying) { Console.WriteLine("\n\n\n"); }    // othwerise the screen becomes heavily cluttered
 
             position.CopyTo(positionCopy, 0);               // Copy the current position to a temporary variable
 
@@ -364,7 +394,7 @@ namespace Crawler
             }
 
 
-            if (mapPlaying == true) { DrawMap(mapCopy); }
+            if (mapPlaying == true && boxDrawn != true) { DrawMap(mapCopy); }   // only draw map when player is alive and playing (boxDrawn is only true when game is over)
 
 
             action = PlayerActions.NOTHING;                 // Reset 'action' after making an action.
@@ -444,11 +474,19 @@ namespace Crawler
                 }
 
                 // User has selected to not replay - therefore exit the game loop
-                else if (replay == false) { active = false; }
+                else if (replay == false) 
+                {
+                    System.Threading.Thread.Sleep(3000);
+                    active = false; 
+                }
             }
 
             // Replay was never toggled on so exit game loop
-            else { active = false; }
+            else 
+            {
+                System.Threading.Thread.Sleep(3000);
+                active = false;
+            }
         }
 
         /*
