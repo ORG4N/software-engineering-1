@@ -20,16 +20,22 @@ These are the most prominent features that define what type of game CMD DUNGEON 
 1. Download files from repo to local machine
    1. Clone from GitHub, OR
    2. Download as ZIP and extract 
-2. Run the .exe to open the game (coursework2-ORG4N > Crawler > CMD-Crawler.exe)
+2. Run the .exe to open the game (coursework2-ORG4N > Crawler > CMD-Crawler.exe.lnk)
    1. Double click on the CMD-Crawler.exe within file explorer, or
-   2. Execute the .exe through the Command Line
+   2. Execute the .exe through the Command Prompt or Powershell
    
 ![Installation gif](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Installation.gif)
 
 
-* Further instructions for executing .exe through Command Line:
+* Further instructions for executing .exe through Powershell:
    * Navigate to the following path using cd: coursework2-ORG4N > Crawler
    * Input the following command: Start-Process CMD-Crawler.exe.lnk
+   * Game should open a new Command Prompt that the game is run from
+   
+* Further instructions for execution .exe through Command Prompt:
+   * Navigate to the following path using cd: coursework2-ORG4N > Crawler
+   * Input the following: CMD-Crawler.exe.lnk
+   * Game should start within the same Command Prompt that is open
    
 (Refer to GIF to see visual instructions on how to open from within the Command Line)
  
