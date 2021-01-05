@@ -215,7 +215,8 @@ The structure of this algorithm is also applied when moving monsters at random, 
 
 
 ### Updates
-###03/01/2021 - Visual improvements
+03/01/2021 - Visual improvements
+
 The code has been adapted to have accept an input called 'history' that is capable of being toggle on/off before playing a map. When this option is off the screen will be cleared at the start of each loop within the Main() method. I have achieved this by calling it at the very start of ProcessUserInput(). This setting makes the game nicer to look at as it reduces hides all the previous moves and actions - the screen becomes less cluttered. This option is enabled by default (the previous moves are shown).
 
 There is also a 5 second pause at the end of the game when the player dies or wins so as to not make the end of the game seem instantaneous. However, quitting remains instantaneous.
