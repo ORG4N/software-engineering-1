@@ -26,13 +26,12 @@ These are the most prominent features that define what type of game CMD DUNGEON 
    
 ![Installation gif](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Installation.gif)
 
-
 * Further instructions for executing .exe through Powershell:
    * Navigate to the following path using cd: coursework2-ORG4N > Crawler
    * Input the following command: Start-Process CMD-Crawler.exe.lnk
    * Game should open a new Command Prompt that the game is run from
    
-* Further instructions for execution .exe through Command Prompt:
+* Further instructions for executing .exe through Command Prompt:
    * Navigate to the following path using cd: coursework2-ORG4N > Crawler
    * Input the following: CMD-Crawler.exe.lnk
    * Game should start within the same Command Prompt that is open
@@ -213,6 +212,8 @@ Rather than calling GetPlayerPosition() and iterating through the array to find 
 
 The structure of this algorithm is also applied when moving monsters at random, within MoveMonsters().
 
+### References
+Docs.microsoft.com. 2021. C# Docs - Get Started, Tutorials, Reference.. [online] Available at: <https://docs.microsoft.com/en-us/dotnet/csharp/> [Accessed 23 December 2020].
 
 ### Updates
 03/01/2021 - Visual improvements
