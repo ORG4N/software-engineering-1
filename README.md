@@ -5,7 +5,7 @@
 
 CMD DUNGEON is an exciting but compact game that has been designed for Command Line Interfaces. From slaying monsters to collecting gold, CMD DUNGEON takes the player on a high-risk adventure within the Command Line.
 
-#### Video: 
+#### Video: https://youtu.be/RtEx6tFU5dI
 
 ## Gameplay Features
 These are the most prominent features that define what type of game CMD DUNGEON truly is:
