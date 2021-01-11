@@ -1,10 +1,11 @@
+**WARNING: This game is not suitable for people who are prone to seizures, such as in the context of epilepsy. This is due to the excessive amount of flickering that happens when repeatedly writing to the console. PROCEED WITH CAUTION!**
 
 ![title image](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Title.png)
 > As part of my Software Engineering 1 module I have been tasked to create a Dungeon Crawler console game using a given codebase. 
 
 CMD DUNGEON is an exciting but compact game that has been designed for Command Line Interfaces. From slaying monsters to collecting gold, CMD DUNGEON takes the player on a high-risk adventure within the Command Line.
 
-#### Video: 
+#### Video: https://youtu.be/RtEx6tFU5dI
 
 ## Gameplay Features
 These are the most prominent features that define what type of game CMD DUNGEON truly is:
@@ -19,16 +20,23 @@ These are the most prominent features that define what type of game CMD DUNGEON 
 1. Download files from repo to local machine
    1. Clone from GitHub, OR
    2. Download as ZIP and extract 
-2. Run the .exe to open the game (coursework2-ORG4N > Crawler > CMD-Crawler.exe)
+2. Run the .exe to open the game (coursework2-ORG4N > Crawler > CMD-Crawler.exe.lnk)
    1. Double click on the CMD-Crawler.exe within file explorer, or
-   2. Execute the .exe through the Command Line
-   
+   2. Execute the .exe through the Command Prompt or Powershell
+
+**WARNING:** GIF METHOD OF INSTALLING IS OUTDATED IN TERMS OF FILE PATH AND EXE NAME, USE WRITTEN INSTRUCTIONS AS GUIDANCE!
+
 ![Installation gif](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Installation.gif)
 
-
-* Further instructions for executing .exe through Command Line:
-   * Navigate to the following path using cd: coursework2-ORG4N > Crawler
-   * Input the following command: Start-Process CMD-Crawler.exe.lnk
+* Further instructions for executing .exe through Powershell:
+   * Navigate to the following path using cd: Crawler > Bin > Release > Netcoreapp3.1
+   * Input the following command: Start-Process Crawler.exe
+   * Game should open a new Command Prompt that the game is run from
+   
+* Further instructions for executing .exe through Command Prompt:
+   * Navigate to the following path using cd: Crawler > Bin > Release > Netcoreapp3.1
+   * Input the following command: Crawler.exe
+   * Game should start within the same Command Prompt that is open
    
 (Refer to GIF to see visual instructions on how to open from within the Command Line)
  
@@ -205,3 +213,22 @@ Within MakeMove() the algorithm firstly replaces the current position with the p
 Rather than calling GetPlayerPosition() and iterating through the array to find the player coordinates after each action, I believe that this method should be more efficient, especially when the maps are large.
 
 The structure of this algorithm is also applied when moving monsters at random, within MoveMonsters().
+
+### References
+Docs.microsoft.com. 2021. C# Docs - Get Started, Tutorials, Reference.. [online] Available at: <https://docs.microsoft.com/en-us/dotnet/csharp/> [Accessed 23 December 2020].
+
+### Updates
+03/01/2021 - Visual improvements
+
+The code has been adapted to have accept an input called 'history' that is capable of being toggle on/off before playing a map. When this option is off the screen will be cleared at the start of each loop within the Main() method. I have achieved this by calling it at the very start of ProcessUserInput(). This setting makes the game nicer to look at as it reduces hides all the previous moves and actions - the screen becomes less cluttered. This option is enabled by default (the previous moves are shown).
+
+There is also a 5 second pause at the end of the game when the player dies or wins so as to not make the end of the game seem instantaneous. However, quitting remains instantaneous.
+
+11/01/2021 - Executable changes
+
+True location of the executable has been updated to the Release folder instead of Debug. Shortcut method is also not applicable when using the zipped folder version of the game.
+
+### Notes - Outdated
+- Due to wanting to make both the Visual Studio debugger and the main .exe compatible with the code I have written they are both stored within the same location, but for ease if access I have made a shortcut and put it within the Crawler folder. Therefore, my instructions guide the player to actually execute the CMD-Crawler.exe shortcut (.lnk).
+   - True location of the .exe is: \Crawler\bin\Release\netcoreapp3.1\Crawler.exe
+   - If the player wishes they can run either the shortcut I have made or the true executable.
