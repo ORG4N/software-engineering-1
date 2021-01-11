@@ -24,13 +24,12 @@ These are the most prominent features that define what type of game CMD DUNGEON 
    1. Double click on the CMD-Crawler.exe within file explorer, or
    2. Execute the .exe through the Command Prompt or Powershell
 
-**WARNING:** GIF METHOD OF INSTALLING IS OUTDATED IN TERMS OF FILE PATH AND EXE NAME, USE WRITTEN INSTRUCTIONS AS GUIDANCE!
-
 ![Installation gif](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Installation.gif)
 
 * Further instructions for executing .exe through Powershell:
    * Navigate to the following path using cd: Crawler > Bin > Release > Netcoreapp3.1
    * Input the following command: Start-Process Crawler.exe
+   * Or input this: ./Crawler.exe
    * Game should open a new Command Prompt that the game is run from
    
 * Further instructions for executing .exe through Command Prompt:
@@ -232,3 +231,4 @@ True location of the executable has been updated to the Release folder instead o
 - Due to wanting to make both the Visual Studio debugger and the main .exe compatible with the code I have written they are both stored within the same location, but for ease if access I have made a shortcut and put it within the Crawler folder. Therefore, my instructions guide the player to actually execute the CMD-Crawler.exe shortcut (.lnk).
    - True location of the .exe is: \Crawler\bin\Release\netcoreapp3.1\Crawler.exe
    - If the player wishes they can run either the shortcut I have made or the true executable.
+   - The video is outdated as it shows this method of running the game via command line, but the readme is updated.
