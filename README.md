@@ -222,7 +222,11 @@ The code has been adapted to have accept an input called 'history' that is capab
 
 There is also a 5 second pause at the end of the game when the player dies or wins so as to not make the end of the game seem instantaneous. However, quitting remains instantaneous.
 
+11/01/2021 - Executable changes
+
+True location of the executable has been updated to the Release folder instead of Debug.
+
 ### Notes
 - Due to wanting to make both the Visual Studio debugger and the main .exe compatible with the code I have written they are both stored within the same location, but for ease if access I have made a shortcut and put it within the Crawler folder. Therefore, my instructions guide the player to actually execute the CMD-Crawler.exe shortcut (.lnk).
-   - True location of the .exe is: \Crawler\bin\Debug\netcoreapp3.1\CMD-Crawler.exe
+   - True location of the .exe is: \Crawler\bin\Release\netcoreapp3.1\CMD-Crawler.exe
    - If the player wishes they can run either the shortcut I have made or the true executable.
