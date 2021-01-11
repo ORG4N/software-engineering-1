@@ -23,17 +23,19 @@ These are the most prominent features that define what type of game CMD DUNGEON 
 2. Run the .exe to open the game (coursework2-ORG4N > Crawler > CMD-Crawler.exe.lnk)
    1. Double click on the CMD-Crawler.exe within file explorer, or
    2. Execute the .exe through the Command Prompt or Powershell
-   
+
+**WARNING:** GIF METHOD OF INSTALLING IS OUTDATED IN TERMS OF FILE PATH AND EXE NAME, USE WRITTEN INSTRUCTIONS AS GUIDANCE!
+
 ![Installation gif](https://github.com/Plymouth-Comp/coursework2-ORG4N/blob/master/images/Installation.gif)
 
 * Further instructions for executing .exe through Powershell:
-   * Navigate to the following path using cd: coursework2-ORG4N > Crawler
-   * Input the following command: Start-Process CMD-Crawler.exe.lnk
+   * Navigate to the following path using cd: Crawler > Bin > Release > Netcoreapp3.1
+   * Input the following command: Start-Process Crawler.exe
    * Game should open a new Command Prompt that the game is run from
    
 * Further instructions for executing .exe through Command Prompt:
-   * Navigate to the following path using cd: coursework2-ORG4N > Crawler
-   * Input the following: CMD-Crawler.exe.lnk
+   * Navigate to the following path using cd: Crawler > Bin > Release > Netcoreapp3.1
+   * Input the following command: Crawler.exe
    * Game should start within the same Command Prompt that is open
    
 (Refer to GIF to see visual instructions on how to open from within the Command Line)
@@ -224,9 +226,9 @@ There is also a 5 second pause at the end of the game when the player dies or wi
 
 11/01/2021 - Executable changes
 
-True location of the executable has been updated to the Release folder instead of Debug.
+True location of the executable has been updated to the Release folder instead of Debug. Shortcut method is also not applicable when using the zipped folder version of the game.
 
-### Notes
+### Notes - Outdated
 - Due to wanting to make both the Visual Studio debugger and the main .exe compatible with the code I have written they are both stored within the same location, but for ease if access I have made a shortcut and put it within the Crawler folder. Therefore, my instructions guide the player to actually execute the CMD-Crawler.exe shortcut (.lnk).
-   - True location of the .exe is: \Crawler\bin\Release\netcoreapp3.1\CMD-Crawler.exe
+   - True location of the .exe is: \Crawler\bin\Release\netcoreapp3.1\Crawler.exe
    - If the player wishes they can run either the shortcut I have made or the true executable.
