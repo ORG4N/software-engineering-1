@@ -1,3 +1,5 @@
+
+
 **WARNING: This game is not suitable for people who are prone to seizures, such as in the context of epilepsy. This is due to the excessive amount of flickering that happens when repeatedly writing to the console. PROCEED WITH CAUTION!**
 
 ![title image](https://github.com/ORG4N/software-engineering-1/blob/master/docs/images/Title.png)
@@ -222,13 +224,3 @@ Docs.microsoft.com. 2021. C# Docs - Get Started, Tutorials, Reference.. [online]
 The code has been adapted to have accept an input called 'history' that is capable of being toggle on/off before playing a map. When this option is off the screen will be cleared at the start of each loop within the Main() method. I have achieved this by calling it at the very start of ProcessUserInput(). This setting makes the game nicer to look at as it reduces hides all the previous moves and actions - the screen becomes less cluttered. This option is enabled by default (the previous moves are shown).
 
 There is also a 5 second pause at the end of the game when the player dies or wins so as to not make the end of the game seem instantaneous. However, quitting remains instantaneous.
-
-11/01/2021 - Executable changes
-
-True location of the executable has been updated to the Release folder instead of Debug. Shortcut method is also not applicable when using the zipped folder version of the game.
-
-### Notes - Outdated
-- Due to wanting to make both the Visual Studio debugger and the main .exe compatible with the code I have written they are both stored within the same location, but for ease if access I have made a shortcut and put it within the Crawler folder. Therefore, my instructions guide the player to actually execute the CMD-Crawler.exe shortcut (.lnk).
-   - True location of the .exe is: \Crawler\bin\Release\netcoreapp3.1\Crawler.exe
-   - If the player wishes they can run either the shortcut I have made or the true executable.
-   - The video is outdated as it shows this method of running the game via command line, but the readme is updated.
