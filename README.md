@@ -20,8 +20,8 @@ These are the most prominent features that define what type of game CMD DUNGEON 
 1. Download files from repo to local machine
    1. Clone from GitHub, OR
    2. Download as ZIP and extract 
-2. Run the .exe to open the game (coursework2-ORG4N > Crawler > CMD-Crawler.exe.lnk)
-   1. Double click on the CMD-Crawler.exe within file explorer, or
+2. Build and Run the .exe to open the game
+   1. Double click on the .exe within file explorer, or
    2. Execute the .exe through the Command Prompt or Powershell
 
 ![Installation gif](https://github.com/ORG4N/software-engineering-1/blob/master/docs/images/Installation.gif)
